@@ -4,7 +4,7 @@ import requests
 
 form_data = {
     "orderBy": "Cost",
-    "anSide": "Runner",
+    "anSide": "Any",
     "filterText": "",
     "fTS": "fulltext",
     "filterUnique": "Any",
@@ -54,6 +54,7 @@ headers = {
 """
 
 sides = ['Corp', 'Runner']
+import bs4
 
 for side in sides:
     form_data['anSide'] = side
