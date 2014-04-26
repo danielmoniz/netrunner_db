@@ -56,13 +56,26 @@ headers = {
 sides = ['Corp', 'Runner']
 import bs4
 
+def reformat_cards(card_list):
+    """Change list of cards into a desirable data structure.
+    """
+    return card_list
+    """
+    card_dict = {}
+    for card in card_list:
+        card_name = str(bs4.BeautifulSoup(card['name']))
+        card_dict[card_name] = card.copy()
+    return card_dict
+    """
+
 for side in sides:
     form_data['anSide'] = side
     r = requests.post(url, data=form_data, headers=headers)
     result = r.json()
     cards = result['cards']
 
-    with open('{}_cards.json'.format(side).lower(), 'w') as f:
+    cards = reformat_cards(cards)
+    with open('{}_cards_test.json'.format(side).lower(), 'w') as f:
         f.write(json.dumps(cards))
 
 search = result['search']
