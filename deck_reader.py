@@ -1,3 +1,4 @@
+import re
 import xml.etree.ElementTree as ET
 import json
 import sqlite3
@@ -7,13 +8,87 @@ import bs4
 
 import netrunner_constants as constants
 
-tree = ET.parse('weyland.xml')
-root = tree.getroot()
+deck_filename = "weyland.txt"
 
-print "="*10
-identity = root[0][0]
-print "Identity: {}".format(identity.text)
-print ""
+def read_card_from_line(line, full_card_list):
+    quantity = 1
+    match = re.search(' x\d', line)
+    if match:
+        quantity = int(line[match.start() + 2:match.end()])
+        line = line[:match.start()].rstrip()
+
+    match = re.search('\(', line)
+    if match:
+        line = line[:match.start()].rstrip()
+    card_name = line
+    try:
+        full_card_list[card_name]
+    except KeyError:
+        return False
+    return card_name, quantity
+
+    """
+    try:
+        pattern = re.compile('(')
+        match = re.search('(', line)
+        stop1 = line.index('(')
+    except ValueError:
+        pass
+    try:
+        match = re.search(' x\d')
+        if match:
+            stop = match.start()
+    """
+
+def get_deck_from_xml(deck_filename, cards):
+    tree = ET.parse('weyland.xml')
+    root = tree.getroot()
+    deck_xml = root[1]
+    deck = {}
+    deck['identity'] = root[0][0]
+    deck['main'] = []
+    for card in deck_xml:
+        card_name = card.text
+        full_card = cards[card_name]
+        card_type = full_card[constants.TYPE]
+        card_data = {
+            'name': card_name,
+            'qty': card.attrib['qty'],
+            'type': card_type,
+        }
+        deck['main'].append(card_data)
+    return deck
+
+def get_deck_from_text(deck_filename, cards):
+    deck = {"identity": None, "main": []}
+    with open(deck_filename, 'r') as f:
+        deck_info = f.readlines()
+    for line in deck_info:
+        card_info = read_card_from_line(line, cards)
+        if not card_info:
+            continue
+        card_name, quantity = card_info
+        full_card = cards[card_name]
+        card_type = full_card[constants.TYPE]
+
+        if full_card[constants.TYPE].lower() == 'identity':
+            if quantity > 1:
+                print "Cannot have more than one identity."
+                exit()
+            deck['identity'] = card_name
+            continue
+        card_data = {
+            'name': card_name,
+            'qty': quantity,
+            'type': card_type,
+        }
+        deck['main'].append(card_data)
+    if not deck['identity']:
+        print "Deck must have an identity card."
+        exit()
+    return deck
+
+
 
 connection = sqlite3.connect("cards.db")
 c = connection.cursor()
@@ -30,15 +105,77 @@ def reformat_cards(card_list):
     return card_dict
 
 cards = reformat_cards(cards)
-deck = root[1]
+
+
+if deck_filename.endswith(".xml"):
+    deck = get_deck_from_xml(deck_filename, cards)
+elif deck_filename.endswith(".txt") or deck_filename.endswith(".text"):
+    deck = get_deck_from_text(deck_filename, cards)
+else:
+    print "Cannot read this deck format."
+    exit()
+
+def print_deck(deck):
+    deck_output = {'output': ""}
+    #add_line = lambda x: deck_output += x + "\n"
+    def add_line(text=""):
+        deck_output['output'] += text + "\n"
+    add_line('-'*12)
+    add_line("Identity:")
+    add_line(deck['identity'])
+    add_line()
+    for card in deck['main']:
+        add_line("{} x{}".format(card['name'], card['qty']))
+
+    print deck_output['output']
+    return deck_output['output']
+
+"""
+def categorize_deck(deck):
+    cat_deck = deck.copy()
+    cat_deck['main'] = {}
+    for card in deck['main']:
+        card_type = card['type']
+        try:
+            cat_deck[card_type].append(card)
+        except KeyError:
+            cat_deck[card_type] = []
+            cat_deck[card_type].append(card)
+    return cat_deck
+"""
+
+"""
+def print_deck_advanced(deck):
+    deck_output = {'output': ""}
+    #add_line = lambda x: deck_output += x + "\n"
+    def add_line(text=""):
+        deck_output['output'] += text + "\n"
+    add_line('-'*12)
+    add_line("Identity:")
+    add_line(deck['identity'])
+    add_line()
+    for category, subdeck in deck['main'].iteritems():
+        add_line(category.upper())
+        for card in deck['main']:
+            add_line("{} x{}".format(card['name'], card['qty']))
+        add_line()
+
+    print deck_output['output']
+    return deck_output['output']
+"""
+
+#cat_deck = categorize_deck(deck)
+print_deck(deck)
+exit()
+
+print "="*10
+identity = deck['identity']
+print "Identity: {}".format(identity.text)
+print ""
+
+
 
 #@TODO Cache with Redis to avoid unnecessary queries
-
-"""
-for card in deck:
-    print card.text, cards[card.text]
-    exit()
-"""
 
 c.execute("DROP TABLE IF EXISTS netrunner_deck_cards")
 """
@@ -59,12 +196,11 @@ c.execute('''CREATE TABLE IF NOT EXISTS netrunner_deck_cards (
             user integer, 
             FOREIGN KEY(card_id) REFERENCES netrunner(card_id))''')
 
-for card in deck:
-    full_card = cards[card.text]
+for card in deck['main']:
+    full_card = cards[card['name']]
     card_id = full_card[constants.CARD_ID]
-    print card_id
-    card_name = full_card[constants.NAME]
-    card_quantity = card.attrib['qty']
+    card_name = card['name']
+    card_quantity = card['qty']
     now = str(datetime.datetime.now())
     c.execute('''INSERT INTO netrunner_deck_cards
             VALUES (?,?,?,?,?,?,?)''', (None, 1, card_id, card_name, card_quantity, now, 11))

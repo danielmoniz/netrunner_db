@@ -1,0 +1,49 @@
+Deck Created with CardGameDB.com Android: Netrunner Deck Builder
+http://www.cardgamedb.com/index.php/netrunner/android-netrunner-deck-builder
+
+Identity:
+Weyland Consortium: Building a Better World (Core) 
+
+
+Total Cards: (50)
+Agenda (11)
+Project Atlas (What Lies Ahead #18) x3 
+Corporate War (Future Proof #120) x3 
+Hostile Takeover (Core #94) x3 
+Government Contracts (A Study in Static #77) x2 
+
+Asset (8)
+Melange Mining Corp (Core #108) x2 
+PAD Campaign (Core #109) x3 
+GRNDL Refinery (Fear and Loathing #99) x2 
+Snare! (Core #70) x1 ■■
+
+ICE (20)
+Data Raven (Core #88) x3 ■■
+Hadrian's Wall (Core #102) x2 
+Archer (Core #101) x2 
+Draco (What Lies Ahead #20) x3 
+Hive (Double Time #117) x2 
+Caduceus (What Lies Ahead #19) x2 
+Quandary (Double Time #120) x3 
+Tollbooth (Core #90) x1 ■■
+Viktor 1.0 (Core #63) x1 ■■
+Eli 1.0 (Future Proof #110) x1 ■
+
+Operation (11)
+Scorched Earth (Core #99) x2 
+SEA Source (Core #86) x2 ■■
+Hedge Fund (Core #110) x3 
+Beanstalk Royalties (Core #98) x3 
+Subliminal Messaging (Fear and Loathing #100) x1 
+
+Upgrade (0)
+
+Total Agenda Points: 21
+
+Influence Values Totals - 
+ Haas-Bioroid: 3 
+ Jinteki: 2
+ NBN: 12
+ The Weyland Consortium: 33
+
