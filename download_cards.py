@@ -59,14 +59,12 @@ import bs4
 def reformat_cards(card_list):
     """Change list of cards into a desirable data structure.
     """
-    return card_list
-    """
-    card_dict = {}
+    card_dict_list = []
     for card in card_list:
         card_name = str(bs4.BeautifulSoup(card['name']))
-        card_dict[card_name] = card.copy()
-    return card_dict
-    """
+        card_dict = card.copy()
+        card_dict_list.append(card_dict)
+    return card_dict_list
 
 for side in sides:
     form_data['anSide'] = side
@@ -75,7 +73,7 @@ for side in sides:
     cards = result['cards']
 
     cards = reformat_cards(cards)
-    with open('{}_cards_test.json'.format(side).lower(), 'w') as f:
+    with open('{}_cards.json'.format(side).lower(), 'w') as f:
         f.write(json.dumps(cards))
 
 search = result['search']

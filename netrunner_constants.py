@@ -1,37 +1,39 @@
 # constants representing Netrunner card attributes in a database table
 # These will be used for referring to elements of a tuple.
 
-NAME = 0
-SIDE = 1
-IDENTITY = 2
-TYPE = 3
-SUBTYPE = 4
-COST = 5
-TOTALCOST = 6
-STRENGTH = 7
-AGENDAPOINTS = 8
-TEXT = 9
-LOYALTY = 10
-TRASH = 11
-MEMORY = 12
-LINK = 13
-UNIQUE = 14
-ERRATA = 15
-SET = 16
-NUM = 17
-COUNT = 18
-FLAVOR = 19
-ILLUSTRATOR = 20
-RATING = 21
-GUID = 22
-IDENTITYTOP = 23
-ID = 24
-IMG = 25
-FURL = 26
-IDENTITYBOTTOM = 27
-NUMCOMMENTS = 28
+CARD_ID = 0
+NAME = 1
+SIDE = 2
+IDENTITY = 3
+TYPE = 4
+SUBTYPE = 5
+COST = 6
+TOTALCOST = 7
+STRENGTH = 8
+AGENDAPOINTS = 9
+TEXT = 10
+LOYALTY = 11
+TRASH = 12
+MEMORY = 13
+LINK = 14
+UNIQUE = 15
+ERRATA = 16
+SET = 17
+NUM = 18
+COUNT = 19
+FLAVOR = 20
+ILLUSTRATOR = 21
+RATING = 22
+GUID = 23
+IDENTITYTOP = 24
+ID = 25
+IMG = 26
+FURL = 27
+IDENTITYBOTTOM = 28
+NUMCOMMENTS = 29
 
 card_attr_map = {
+    "card_id": CARD_ID,
     "name": NAME,
     "side": SIDE,
     "identity": IDENTITY,

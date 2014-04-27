@@ -2,6 +2,7 @@ import sqlite3
 import json
 
 row = [
+    "card_id",
     "name",
     "side",
     "identity",
@@ -38,15 +39,13 @@ row = [
     "numcomments",
 ]
 
-test_row = tuple(row[:2])
-
 connection = sqlite3.connect("cards.db")
 c = connection.cursor()
 
 # Create table
 c.execute('''DROP TABLE IF EXISTS netrunner''')
 c.execute('''CREATE TABLE IF NOT EXISTS netrunner
-            (name text, side text, identity text, type text, subtype text, cost text, totalcost integer, strength text, agendapoints text, card_text text, loyalty text, trash text, memory text, link text, is_unique text, errata text, release_set text, num text, count text, flavor text, illustrator text, rating text, GUID text, identitytop text, id text, img text, furl text, identitybottom text, numcomments text)''')
+            (card_id integer primary key autoincrement, name text, side text, identity text, type text, subtype text, cost text, totalcost integer, strength text, agendapoints text, card_text text, loyalty text, trash text, memory text, link text, is_unique text, errata text, release_set text, num text, count text, flavor text, illustrator text, rating text, GUID text, identitytop text, id text, img text, furl text, identitybottom text, numcomments text)''')
 
 # add initial cards
 
@@ -57,8 +56,12 @@ for side in sides:
     for card in cards:
         ordered_card_values = []
         for key in row:
+            if key == "card_id":
+                # empty value for primary key
+                ordered_card_values.append(None)
+                continue
             ordered_card_values.append(card[key])
-        c.execute('INSERT INTO netrunner VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(side), ordered_card_values)
+        c.execute('INSERT INTO netrunner VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(side), ordered_card_values)
 
 connection.commit()
 connection.close()
