@@ -1,7 +1,10 @@
 import xml.etree.ElementTree as ET
 import json
+import sqlite3
 
 import bs4
+
+import netrunner_constants as constants
 
 tree = ET.parse('weyland.xml')
 root = tree.getroot()
@@ -11,31 +14,37 @@ identity = root[0][0]
 print "Identity: {}".format(identity.text)
 print ""
 
-with open('corp_cards_test.json') as f:
-    corp_cards = json.loads(f.read())
+connection = sqlite3.connect("cards.db")
+c = connection.cursor()
+query = c.execute("SELECT * FROM netrunner")
+cards = query.fetchall()
 
-with open('runner_cards_test.json') as f:
-    runner_cards = json.loads(f.read())
+def reformat_cards(card_list):
+    """Change list of cards into a desirable data structure.
+    """
+    card_dict = {}
+    for card in card_list:
+        card_name = str(bs4.BeautifulSoup(card[constants.NAME]))
+        card_dict[card_name] = card
+    return card_dict
 
+cards = reformat_cards(cards)
 
-all_cards = [corp_cards, runner_cards]
+#@TODO Cache with Redis to avoid unnecessary queries
+
+connection.close()
+
 
 deck = root[1]
 for card in deck:
-    card_type = all_cards[0][card.text]['type']
+    full_card = cards[card.text]
+    card_type = full_card[constants.TYPE]
     print "{} (x{}), type: {}".format(card.text, card.attrib['qty'], card_type)
 
 print "="*10
 print ""
 
-d = {
-    "identity": {
-        "name": "test identity",
-    },
-    "deck": [
-        {
-            "name": "card1",
-            "qty": 2,
-        },
-    ]
-}
+for card in deck:
+    full_card = cards[card.text]
+    card_type = full_card[constants.TYPE]
+    card_subtype = full_card[constants.SUBTYPE]

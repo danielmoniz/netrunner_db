@@ -44,23 +44,21 @@ connection = sqlite3.connect("cards.db")
 c = connection.cursor()
 
 # Create table
-c.execute('''DROP TABLE IF EXISTS corp''')
-"""
-c.execute('''CREATE TABLE corp
-            (?,?)''', test_row)
-"""
-c.execute('''CREATE TABLE corp
+c.execute('''DROP TABLE IF EXISTS netrunner''')
+c.execute('''CREATE TABLE IF NOT EXISTS netrunner
             (name text, side text, identity text, type text, subtype text, cost text, totalcost integer, strength text, agendapoints text, card_text text, loyalty text, trash text, memory text, link text, is_unique text, errata text, release_set text, num text, count text, flavor text, illustrator text, rating text, GUID text, identitytop text, id text, img text, furl text, identitybottom text, numcomments text)''')
 
-
 # add initial cards
-with open('corp_cards.json') as f:
-    corp_cards = json.loads(f.read())
-for card in corp_cards:
-    ordered_card_values = []
-    for key in row:
-        ordered_card_values.append(card[key])
-    c.execute('INSERT INTO corp VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', ordered_card_values)
+
+sides = ['corp', 'runner']
+for side in sides:
+    with open('{}_cards.json'.format(side)) as f:
+        cards = json.loads(f.read())
+    for card in cards:
+        ordered_card_values = []
+        for key in row:
+            ordered_card_values.append(card[key])
+        c.execute('INSERT INTO netrunner VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(side), ordered_card_values)
 
 connection.commit()
 connection.close()
