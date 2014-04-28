@@ -5,11 +5,13 @@
     {% endif %}
     {% if cat_deck %}
 	{% for type, subdeck in cat_deck.main.iteritems() %}
-	    <b>{{ type }}:</b><br />
-	    {% for card in subdeck %}
+	    <b>{{ type }} ({{ subdeck.total }} total, {{ subdeck.cards|length }} unique):</b><br />
+	    {% for card in subdeck['cards'] %}
 		{{ card.name }} x{{card.qty}}<br />
 	    {% endfor %}<br />
 	{% endfor %}
+	<b>{{ deck.main|sum(attribute="qty") }} total, {{ deck.main|length }}
+	unique</b><br /><br />
     {% endif %}
     <form action="/read_deck" method="POST">
 	<textarea name="deck_data" rows="30" cols="80"></textarea>

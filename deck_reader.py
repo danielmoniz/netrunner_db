@@ -60,6 +60,12 @@ def get_deck_from_xml(deck_filename, cards):
     return deck
 
 def get_deck_from_text(deck_text, cards):
+    """Parse a text file for cards that make up a deck.
+    @TODO Allow for multiple cards of the same name to be written, 
+    without causing issues.
+    ->  Eg. if 'Snare!' is written twice, it should either count as one or two 
+        Snares, but not two Snare entries.
+    """
     deck = {"identity": None, "main": []}
     deck_info = deck_text.split('\n')
     for line in deck_info:
@@ -90,12 +96,15 @@ def get_deck_from_text(deck_text, cards):
     return deck
 
 
-
-def more_to_be_reformatted():
+def get_all_cards():
     connection = sqlite3.connect("cards.db")
     c = connection.cursor()
     query = c.execute("SELECT * FROM netrunner")
     cards = query.fetchall()
+    cards = reformat_cards(cards)
+    connection.close()
+    return cards
+
 
 def reformat_cards(card_list):
     """Change list of cards into a desirable data structure.
@@ -105,8 +114,6 @@ def reformat_cards(card_list):
         card_name = str(bs4.BeautifulSoup(card[constants.NAME]))
         card_dict[card_name] = card
     return card_dict
-
-#cards = reformat_cards(cards)
 
 
 def get_deck_from_input(deck_data):
@@ -140,10 +147,14 @@ def categorize_deck(deck):
     for card in deck['main']:
         card_type = card['type']
         try:
-            cat_deck['main'][card_type].append(card)
+            cat_deck['main'][card_type]['cards'].append(card)
+            cat_deck['main'][card_type]['total'] += card['qty']
         except KeyError:
-            cat_deck['main'][card_type] = []
-            cat_deck['main'][card_type].append(card)
+            cat_deck['main'][card_type] = {
+                "total": card['qty'],
+                "cards": [],
+                }
+            cat_deck['main'][card_type]['cards'].append(card)
     return cat_deck
 
 """
@@ -166,9 +177,6 @@ def print_deck_advanced(deck):
     return deck_output['output']
 """
 
-#cat_deck = categorize_deck(deck)
-#print_deck(deck)
-
 def to_be_converted():
     print "="*10
     identity = deck['identity']
@@ -177,7 +185,7 @@ def to_be_converted():
 
 
 
-#@TODO Cache with Redis to avoid unnecessary queries
+    #@TODO Cache with Redis to avoid unnecessary queries
 
     c.execute("DROP TABLE IF EXISTS netrunner_deck_cards")
     """
