@@ -1,0 +1,20 @@
+<html>
+    {% if deck %}
+	<b>Identity:</b><br />
+	{{ deck.identity }}<br /><br />
+    {% endif %}
+    {% if cat_deck %}
+	{% for type, subdeck in cat_deck.main.iteritems() %}
+	    <b>{{ type }}:</b><br />
+	    {% for card in subdeck %}
+		{{ card.name }} x{{card.qty}}<br />
+	    {% endfor %}<br />
+	{% endfor %}
+    {% endif %}
+    <form action="/read_deck" method="POST">
+	<textarea name="deck_data" rows="30" cols="80"></textarea>
+	<br />
+	<input type='submit' />
+    </form>
+
+</html>

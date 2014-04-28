@@ -59,10 +59,9 @@ def get_deck_from_xml(deck_filename, cards):
         deck['main'].append(card_data)
     return deck
 
-def get_deck_from_text(deck_filename, cards):
+def get_deck_from_text(deck_text, cards):
     deck = {"identity": None, "main": []}
-    with open(deck_filename, 'r') as f:
-        deck_info = f.readlines()
+    deck_info = deck_text.split('\n')
     for line in deck_info:
         card_info = read_card_from_line(line, cards)
         if not card_info:
@@ -83,17 +82,20 @@ def get_deck_from_text(deck_filename, cards):
             'type': card_type,
         }
         deck['main'].append(card_data)
+    """
     if not deck['identity']:
         print "Deck must have an identity card."
-        exit()
+        return False
+    """
     return deck
 
 
 
-connection = sqlite3.connect("cards.db")
-c = connection.cursor()
-query = c.execute("SELECT * FROM netrunner")
-cards = query.fetchall()
+def more_to_be_reformatted():
+    connection = sqlite3.connect("cards.db")
+    c = connection.cursor()
+    query = c.execute("SELECT * FROM netrunner")
+    cards = query.fetchall()
 
 def reformat_cards(card_list):
     """Change list of cards into a desirable data structure.
@@ -104,16 +106,18 @@ def reformat_cards(card_list):
         card_dict[card_name] = card
     return card_dict
 
-cards = reformat_cards(cards)
+#cards = reformat_cards(cards)
 
 
-if deck_filename.endswith(".xml"):
-    deck = get_deck_from_xml(deck_filename, cards)
-elif deck_filename.endswith(".txt") or deck_filename.endswith(".text"):
-    deck = get_deck_from_text(deck_filename, cards)
-else:
-    print "Cannot read this deck format."
-    exit()
+def get_deck_from_input(deck_data):
+    if deck_filename.endswith(".xml"):
+        deck = get_deck_from_xml(deck_filename, cards)
+    elif deck_filename.endswith(".txt") or deck_filename.endswith(".text"):
+        deck = get_deck_from_text(deck_filename, cards)
+    else:
+        print "Cannot read this deck format."
+        return False
+    return deck
 
 def print_deck(deck):
     deck_output = {'output': ""}
@@ -130,19 +134,17 @@ def print_deck(deck):
     print deck_output['output']
     return deck_output['output']
 
-"""
 def categorize_deck(deck):
     cat_deck = deck.copy()
     cat_deck['main'] = {}
     for card in deck['main']:
         card_type = card['type']
         try:
-            cat_deck[card_type].append(card)
+            cat_deck['main'][card_type].append(card)
         except KeyError:
-            cat_deck[card_type] = []
-            cat_deck[card_type].append(card)
+            cat_deck['main'][card_type] = []
+            cat_deck['main'][card_type].append(card)
     return cat_deck
-"""
 
 """
 def print_deck_advanced(deck):
@@ -165,64 +167,64 @@ def print_deck_advanced(deck):
 """
 
 #cat_deck = categorize_deck(deck)
-print_deck(deck)
-exit()
+#print_deck(deck)
 
-print "="*10
-identity = deck['identity']
-print "Identity: {}".format(identity.text)
-print ""
+def to_be_converted():
+    print "="*10
+    identity = deck['identity']
+    print "Identity: {}".format(identity.text)
+    print ""
 
 
 
 #@TODO Cache with Redis to avoid unnecessary queries
 
-c.execute("DROP TABLE IF EXISTS netrunner_deck_cards")
-"""
-c.execute('''CREATE TABLE IF NOT EXISTS netrunner_decks (
-            deck_id integer primary key autoincrement, 
-             integer, 
-            last_update text, 
-            creation_date text,
-            user integer''')
-"""
-c.execute('''CREATE TABLE IF NOT EXISTS netrunner_deck_cards (
-            deck_card_id integer primary key autoincrement, 
-            deck_id integer, 
-            card_id integer, 
-            card_name text, 
-            quantity integer, 
-            date text, 
-            user integer, 
-            FOREIGN KEY(card_id) REFERENCES netrunner(card_id))''')
+    c.execute("DROP TABLE IF EXISTS netrunner_deck_cards")
+    """
+    c.execute('''CREATE TABLE IF NOT EXISTS netrunner_decks (
+                deck_id integer primary key autoincrement, 
+                 integer, 
+                last_update text, 
+                creation_date text,
+                user integer''')
+    """
+    c.execute('''CREATE TABLE IF NOT EXISTS netrunner_deck_cards (
+                deck_card_id integer primary key autoincrement, 
+                deck_id integer, 
+                card_id integer, 
+                card_name text, 
+                quantity integer, 
+                date text, 
+                user integer, 
+                FOREIGN KEY(card_id) REFERENCES netrunner(card_id))''')
 
-for card in deck['main']:
-    full_card = cards[card['name']]
-    card_id = full_card[constants.CARD_ID]
-    card_name = card['name']
-    card_quantity = card['qty']
-    now = str(datetime.datetime.now())
-    c.execute('''INSERT INTO netrunner_deck_cards
-            VALUES (?,?,?,?,?,?,?)''', (None, 1, card_id, card_name, card_quantity, now, 11))
+    for card in deck['main']:
+        full_card = cards[card['name']]
+        card_id = full_card[constants.CARD_ID]
+        card_name = card['name']
+        card_quantity = card['qty']
+        now = str(datetime.datetime.now())
+        c.execute('''INSERT INTO netrunner_deck_cards
+                VALUES (?,?,?,?,?,?,?)''', (None, 1, card_id, card_name, card_quantity, now, 11))
 
-print '-'*20
-print len(c.execute('''SELECT * FROM netrunner''').fetchall())
-print len(c.execute('''SELECT * FROM netrunner_deck_cards''').fetchall())
-print c.execute('''SELECT card_name, quantity FROM netrunner_deck_cards as dc INNER JOIN netrunner AS n ON dc.card_id=n.card_id''').fetchall()
+    print '-'*20
+    print len(c.execute('''SELECT * FROM netrunner''').fetchall())
+    print len(c.execute('''SELECT * FROM netrunner_deck_cards''').fetchall())
+    print c.execute('''SELECT card_name, quantity FROM netrunner_deck_cards as dc INNER JOIN netrunner AS n ON dc.card_id=n.card_id''').fetchall()
 
-connection.close()
-exit()
+    connection.close()
+    exit()
 
 
-for card in deck:
-    full_card = cards[card.text]
-    card_type = full_card[constants.TYPE]
-    print "{} (x{}), type: {}".format(card.text, card.attrib['qty'], card_type)
+    for card in deck:
+        full_card = cards[card.text]
+        card_type = full_card[constants.TYPE]
+        print "{} (x{}), type: {}".format(card.text, card.attrib['qty'], card_type)
 
-print "="*10
-print ""
+    print "="*10
+    print ""
 
-for card in deck:
-    full_card = cards[card.text]
-    card_type = full_card[constants.TYPE]
-    card_subtype = full_card[constants.SUBTYPE]
+    for card in deck:
+        full_card = cards[card.text]
+        card_type = full_card[constants.TYPE]
+        card_subtype = full_card[constants.SUBTYPE]
