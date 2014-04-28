@@ -17,14 +17,18 @@ def hello_world():
 def read_deck():
     if request.method == 'GET':
         return render_template('read_deck.html')
-    cards = deck_reader.get_all_cards()
+    all_cards = deck_reader.get_all_cards()
+    #print all_cards
 
     deck_data = request.form['deck_data']
-    deck = deck_reader.get_deck_from_text(deck_data, cards)
+    deck = deck_reader.get_deck_from_text(deck_data, all_cards)
+    print deck['identity']
     if not deck:
         return "Deck was invalid."
     cat_deck = deck_reader.categorize_deck(deck)
-    return render_template('read_deck.html', deck=deck, cat_deck=cat_deck)
+    #completion = deck_reader.deck_completion(deck)
+    flaws = deck_reader.find_flaws(deck, all_cards)
+    return render_template('read_deck.html', deck=deck, cat_deck=cat_deck, flaws=flaws)
 
 if __name__ == '__main__':
     app.run(debug=True)

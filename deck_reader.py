@@ -4,13 +4,14 @@ import json
 import sqlite3
 import datetime
 
+import redis
 import bs4
 
 import netrunner_constants as constants
 
 deck_filename = "weyland.txt"
 
-def read_card_from_line(line, full_card_list):
+def read_card_from_line(line, full_card_map):
     quantity = 1
     match = re.search(' x\d', line)
     if match:
@@ -20,9 +21,11 @@ def read_card_from_line(line, full_card_list):
     match = re.search('\(', line)
     if match:
         line = line[:match.start()].rstrip()
-    card_name = line
+    card_name = line.strip()
+    if "Andromeda" in card_name:
+        full_card_map[card_name]
     try:
-        full_card_list[card_name]
+        full_card_map[card_name]
     except KeyError:
         return False
     return card_name, quantity
@@ -74,6 +77,7 @@ def get_deck_from_text(deck_text, cards):
             continue
         card_name, quantity = card_info
         full_card = cards[card_name]
+        card_name = full_card[constants.NAME] # replace name w/ official name
         card_type = full_card[constants.TYPE]
 
         if full_card[constants.TYPE].lower() == 'identity':
@@ -97,22 +101,83 @@ def get_deck_from_text(deck_text, cards):
 
 
 def get_all_cards():
-    connection = sqlite3.connect("cards.db")
-    c = connection.cursor()
-    query = c.execute("SELECT * FROM netrunner")
-    cards = query.fetchall()
-    cards = reformat_cards(cards)
-    connection.close()
-    return cards
+    """Return a list of every Netrunner card in the database.
+    Retrieve from redis cache if possible.
+    """
+    NETRUNNER_CARD_LIST = 'netrunner:cards:all'
+    redis_instance = redis.StrictRedis(host="localhost", port=6379, db=0)
+    redis_cards = redis_instance.get(NETRUNNER_CARD_LIST)
+    if redis_cards:
+        cards = json.loads(redis_cards)
+    else:
+        connection = sqlite3.connect("cards.db")
+        c = connection.cursor()
+        query = c.execute("SELECT * FROM netrunner")
+        cards = query.fetchall()
+        connection.close()
+        redis_instance.set(NETRUNNER_CARD_LIST, json.dumps(cards))
+
+    cards_map = reformat_cards(cards)
+
+    # Add duplicate Indentity entries with short versions of names
+    for card in cards:
+        if card[constants.TYPE].lower() == "identity":
+            card_name = card[constants.NAME]
+            new_card_name = card_name[:card_name.index(':')]
+            cards_map[new_card_name] = card
+            print "="*5
+            print type(card)
+            print "="*5
+    
+    return cards_map
+
+
+def find_flaws(deck, all_cards):
+    print deck['identity']
+    print all_cards[deck['identity']]
+    side = all_cards[deck['identity']][constants.SIDE]
+    flaws_map = {"corp": find_corp_flaws, "runner": find_runner_flaws}
+    return flaws_map[side.lower()](deck, all_cards)
+
+def find_corp_flaws(deck, all_cards):
+    flaws = []
+    cat_deck = categorize_deck(deck)
+    ice = cat_deck['main']['ice']
+    if len(ice) == 0:
+        flaws.append("No ice!")
+    return flaws
+
+def find_runner_flaws(deck, all_cards):
+    flaws = []
+    cat_deck = categorize_deck(deck)
+    print cat_deck['main'].keys()
+    icebreakers = get_category_from_cat_deck('Program', cat_deck)
+    if len(icebreakers) == 0:
+        flaws.append("No programs!!")
+    return flaws
+
+def get_category_from_cat_deck(category, deck):
+    try:
+        subdeck = deck['main'][category]
+    except KeyError:
+        subdeck = []
+    return subdeck
 
 
 def reformat_cards(card_list):
     """Change list of cards into a desirable data structure.
     """
-    card_dict = {}
-    for card in card_list:
-        card_name = str(bs4.BeautifulSoup(card[constants.NAME]))
-        card_dict[card_name] = card
+    NETRUNNER_CARD_MAP = 'netrunner:cards:all:map'
+    redis_instance = redis.StrictRedis(host="localhost", port=6379, db=0)
+    redis_cards = redis_instance.get(NETRUNNER_CARD_MAP)
+    if redis_cards:
+        return json.loads(redis_cards)
+    else:
+        card_dict = {}
+        for card in card_list:
+            card_name = str(bs4.BeautifulSoup(card[constants.NAME]))
+            card_dict[card_name] = card
+        redis_instance.set(NETRUNNER_CARD_MAP, json.dumps(card_dict))
     return card_dict
 
 
@@ -184,8 +249,6 @@ def to_be_converted():
     print ""
 
 
-
-    #@TODO Cache with Redis to avoid unnecessary queries
 
     c.execute("DROP TABLE IF EXISTS netrunner_deck_cards")
     """

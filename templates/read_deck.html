@@ -1,4 +1,5 @@
 <html>
+    <div style="float:left;">
     {% if deck %}
 	<b>Identity:</b><br />
 	{{ deck.identity }}<br /><br />
@@ -13,10 +14,21 @@
 	<b>{{ deck.main|sum(attribute="qty") }} total, {{ deck.main|length }}
 	unique</b><br /><br />
     {% endif %}
-    <form action="/read_deck" method="POST">
-	<textarea name="deck_data" rows="30" cols="80"></textarea>
-	<br />
-	<input type='submit' />
-    </form>
+    </div>
+    <div style="float:right;">
+    {% if flaws %}
+	<b>Flaws:</b>
+	{% for flaw in flaws %}
+	    {{ flaw }}
+	{% endfor %}
+    {% endif %}
+    </div>
+    <div style="float:left;">
+	<form action="/read_deck" method="POST">
+	    <textarea name="deck_data" rows="30" cols="80"></textarea>
+	    <br />
+	    <input type='submit' />
+	</form>
+    </div>
 
 </html>
