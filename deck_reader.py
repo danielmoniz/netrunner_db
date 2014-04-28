@@ -107,6 +107,7 @@ def get_all_cards():
     NETRUNNER_CARD_LIST = 'netrunner:cards:all'
     redis_instance = redis.StrictRedis(host="localhost", port=6379, db=0)
     redis_cards = redis_instance.get(NETRUNNER_CARD_LIST)
+    redis_cards = False
     if redis_cards:
         cards = json.loads(redis_cards)
     else:
@@ -170,6 +171,7 @@ def reformat_cards(card_list):
     NETRUNNER_CARD_MAP = 'netrunner:cards:all:map'
     redis_instance = redis.StrictRedis(host="localhost", port=6379, db=0)
     redis_cards = redis_instance.get(NETRUNNER_CARD_MAP)
+    redis_cards = False
     if redis_cards:
         return json.loads(redis_cards)
     else:
