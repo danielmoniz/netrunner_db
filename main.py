@@ -3,6 +3,7 @@ from flask import render_template
 from flask import request
 import bs4
 
+import deck as deck_module
 import deck_reader
 import analyze
 import netrunner_constants as constants
@@ -21,22 +22,23 @@ def read_deck():
     #print all_cards
 
     deck_data = request.form['deck_data']
-    deck = deck_reader.get_deck_from_text(deck_data, all_cards)
-    print deck.side
+    deck = deck_module.Deck.build_deck_from_text(deck_data, all_cards)
     if not deck:
         return "Deck was invalid."
+    print deck.side
     flaws = deck_reader.find_flaws(deck, all_cards)
     #flaws = []
 
     deck_analysis = []
-    deck_analysis.append(analyze.total_deck_cost(deck, all_cards))
+    deck_analysis.append(analyze.total_deck_cost(deck))
 
     return render_template(
         'read_deck.html', 
+        deck=deck,
         identity=deck.identity, 
-        deck=deck.cards, 
+        cards=deck.cards, 
         side=deck.side,
-        cat_deck=deck.cat_cards, 
+        cat_cards=deck.cat_cards, 
         flaws=flaws,
         analysis=deck_analysis,
     )
