@@ -22,14 +22,11 @@ def read_deck():
 
     deck_data = request.form['deck_data']
     deck = deck_reader.get_deck_from_text(deck_data, all_cards)
-    print "DECK PRINTING"
-    print deck
-    print deck.cards
-    print "END OF DECK PRINTING"
+    print deck.side
     if not deck:
         return "Deck was invalid."
-    #flaws = deck_reader.find_flaws(deck, all_cards)
-    flaws = []
+    flaws = deck_reader.find_flaws(deck, all_cards)
+    #flaws = []
 
     deck_analysis = []
     deck_analysis.append(analyze.total_deck_cost(deck, all_cards))
@@ -38,6 +35,7 @@ def read_deck():
         'read_deck.html', 
         identity=deck.identity, 
         deck=deck.cards, 
+        side=deck.side,
         cat_deck=deck.cat_cards, 
         flaws=flaws,
         analysis=deck_analysis,

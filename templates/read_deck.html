@@ -1,6 +1,7 @@
 <html>
     <div style="float:left;">
     {% if deck %}
+	<b>Side:</b> {{ side }}<br /><br />
 	<b>Identity:</b><br />
 	{{ identity }}<br /><br />
     {% endif %}
@@ -31,8 +32,11 @@
 	</form>
     </div>
     <div style="float:right;">
+	<b>Stats:</b><br />
 	{% for stat in analysis %}
-	    {{ stat }}<br /><br />
+	    {% for substat in stat %}
+		{{ substat }}<br />
+	    {% endfor %}
 	{% endfor %}
     </div>
 

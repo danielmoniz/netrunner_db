@@ -7,6 +7,7 @@ import datetime
 import redis
 import bs4
 
+import deck as deck_struct
 import netrunner_constants as constants
 
 deck_filename = "weyland.txt"
@@ -69,26 +70,15 @@ def get_deck_from_text(deck_text, full_card_map):
         Snares, but not two Snare entries.
     """
     deck_cards = []
-    for key, value in full_card_map.iteritems():
-        print key
-        print value[constants.NAME]
-    print "@"*20
     identity = None
     deck_info = deck_text.split('\n')
     for line in deck_info:
         card_info = read_card_from_line(line, full_card_map)
         if not card_info:
-            print "Skipping line"
             continue
         card_name, quantity = card_info
-        if "Hadrian" in card_name:
-            print repr(card_name)
-            print '*'*10
         full_card = full_card_map[card_name]
         card_name = full_card[constants.NAME] # replace name w/ official name
-        if "Hadrian" in card_name:
-            print repr(card_name)
-            print '='*10
         card_type = full_card[constants.TYPE]
 
         if full_card[constants.TYPE].lower() == 'identity':
@@ -103,9 +93,9 @@ def get_deck_from_text(deck_text, full_card_map):
             'type': card_type,
         }
         deck_cards.append(card_data)
-
-    import deck as deck_struct
-    deck_obj = deck_struct.Deck(deck_cards, identity)
+    
+    side = full_card_map[identity][constants.SIDE]
+    deck_obj = deck_struct.Deck(deck_cards, identity, side, full_card_map)
     return deck_obj
 
 
@@ -126,11 +116,6 @@ def get_all_cards():
         cards = query.fetchall()
         connection.close()
 
-        print "PRINTING CARD"
-        print len(cards[0])
-        for card in cards:
-            if len(card) != 30:
-                print len(card)
         cards = clean_card_data(cards)
         redis_instance.set(NETRUNNER_CARD_LIST, json.dumps(cards))
 
@@ -162,16 +147,14 @@ def clean_card_data(cards):
 
 
 def find_flaws(deck, all_cards):
-    print deck.identity
-    print all_cards[deck.identity]
-    side = all_cards[deck.identity][constants.SIDE]
+    side = deck.side.lower()
     flaws_map = {"corp": find_corp_flaws, "runner": find_runner_flaws}
     return flaws_map[side.lower()](deck, all_cards)
 
 def find_corp_flaws(deck, all_cards):
     flaws = []
     cat_deck = deck.cat_cards
-    ice = get_category_from_cat_deck('ice', cat_deck)
+    ice = get_category_from_cat_deck('ICE', cat_deck)
     if len(ice) == 0:
         flaws.append("No ice!")
     return flaws

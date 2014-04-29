@@ -1,12 +1,15 @@
-
+import netrunner_constants as constants
 
 class Deck(object):
 
-    def __init__(self, cards, identity):
+    def __init__(self, cards, identity, side, card_map=None):
         self.identity = identity
         self.cards = cards
         self.cat_cards = self.categorize_cards()
-        #self.side = None
+        self.card_map = None
+        self.side = side
+        if card_map:
+            self.card_map = card_map
 
     def __getitem__(self, index):
         return self.cards[index]
