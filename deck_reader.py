@@ -34,16 +34,16 @@ def get_all_cards():
             real_cards.append(real_card)
 
         # Add duplicate Indentity entries with short versions of names
+        # @TODO Ensure that the new card has the key of the shortened name (eg.
+        # 'Andromeda' instead of 'Andromeda: Dispo...'.
         new_cards = []
         for card in real_cards:
-            if "Andromeda" in card.name:
-                print card.name
             if card.type.lower() == "identity" and card.side.lower() == 'runner':
                 if ':' not in card.name:
                     continue
                 new_card_name = card.name[:card.name.index(':')]
                 new_card = card_module.DetailedCard(card)
-                new_card.name = card.name
+                new_card.name = new_card_name
                 new_cards.append(new_card)
         real_cards.extend(new_cards)
 

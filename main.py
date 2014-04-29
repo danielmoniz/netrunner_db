@@ -1,7 +1,6 @@
 from flask import Flask
 from flask import render_template
 from flask import request
-import bs4
 
 import deck as deck_module
 import deck_reader
@@ -25,7 +24,6 @@ def read_deck():
     deck = deck_module.Deck.build_deck_from_text(deck_data, all_cards)
     if not deck:
         return "Deck was invalid."
-    print deck.side
     flaws = deck_reader.find_flaws(deck, all_cards)
     #flaws = []
 
