@@ -2,16 +2,16 @@
     <div style="float:left;">
     {% if deck %}
 	<b>Identity:</b><br />
-	{{ deck.identity }}<br /><br />
+	{{ identity }}<br /><br />
     {% endif %}
     {% if cat_deck %}
-	{% for type, subdeck in cat_deck.main.iteritems() %}
+	{% for type, subdeck in cat_deck.iteritems() %}
 	    <b>{{ type }} ({{ subdeck.total }} total, {{ subdeck.cards|length }} unique):</b><br />
 	    {% for card in subdeck['cards'] %}
 		{{ card.name }} x{{card.qty}}<br />
 	    {% endfor %}<br />
 	{% endfor %}
-	<b>{{ deck.main|sum(attribute="qty") }} total, {{ deck.main|length }}
+	<b>{{ deck|sum(attribute="qty") }} total, {{ deck|length }}
 	unique</b><br /><br />
     {% endif %}
     </div>
@@ -29,6 +29,11 @@
 	    <br />
 	    <input type='submit' />
 	</form>
+    </div>
+    <div style="float:right;">
+	{% for stat in analysis %}
+	    {{ stat }}<br /><br />
+	{% endfor %}
     </div>
 
 </html>

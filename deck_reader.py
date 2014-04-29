@@ -13,6 +13,7 @@ deck_filename = "weyland.txt"
 
 def read_card_from_line(line, full_card_map):
     quantity = 1
+    line = str(bs4.BeautifulSoup(line))
     match = re.search(' x\d', line)
     if match:
         quantity = int(line[match.start() + 2:match.end()])
@@ -22,8 +23,6 @@ def read_card_from_line(line, full_card_map):
     if match:
         line = line[:match.start()].rstrip()
     card_name = line.strip()
-    if "Andromeda" in card_name:
-        full_card_map[card_name]
     try:
         full_card_map[card_name]
     except KeyError:
@@ -62,42 +61,52 @@ def get_deck_from_xml(deck_filename, cards):
         deck['main'].append(card_data)
     return deck
 
-def get_deck_from_text(deck_text, cards):
+def get_deck_from_text(deck_text, full_card_map):
     """Parse a text file for cards that make up a deck.
     @TODO Allow for multiple cards of the same name to be written, 
     without causing issues.
     ->  Eg. if 'Snare!' is written twice, it should either count as one or two 
         Snares, but not two Snare entries.
     """
-    deck = {"identity": None, "main": []}
+    deck_cards = []
+    for key, value in full_card_map.iteritems():
+        print key
+        print value[constants.NAME]
+    print "@"*20
+    identity = None
     deck_info = deck_text.split('\n')
     for line in deck_info:
-        card_info = read_card_from_line(line, cards)
+        card_info = read_card_from_line(line, full_card_map)
         if not card_info:
+            print "Skipping line"
             continue
         card_name, quantity = card_info
-        full_card = cards[card_name]
+        if "Hadrian" in card_name:
+            print repr(card_name)
+            print '*'*10
+        full_card = full_card_map[card_name]
         card_name = full_card[constants.NAME] # replace name w/ official name
+        if "Hadrian" in card_name:
+            print repr(card_name)
+            print '='*10
         card_type = full_card[constants.TYPE]
 
         if full_card[constants.TYPE].lower() == 'identity':
             if quantity > 1:
                 print "Cannot have more than one identity."
-                exit()
-            deck['identity'] = card_name
+                return False
+            identity = card_name
             continue
         card_data = {
             'name': card_name,
             'qty': quantity,
             'type': card_type,
         }
-        deck['main'].append(card_data)
-    """
-    if not deck['identity']:
-        print "Deck must have an identity card."
-        return False
-    """
-    return deck
+        deck_cards.append(card_data)
+
+    import deck as deck_struct
+    deck_obj = deck_struct.Deck(deck_cards, identity)
+    return deck_obj
 
 
 def get_all_cards():
@@ -116,42 +125,60 @@ def get_all_cards():
         query = c.execute("SELECT * FROM netrunner")
         cards = query.fetchall()
         connection.close()
+
+        print "PRINTING CARD"
+        print len(cards[0])
+        for card in cards:
+            if len(card) != 30:
+                print len(card)
+        cards = clean_card_data(cards)
         redis_instance.set(NETRUNNER_CARD_LIST, json.dumps(cards))
 
     cards_map = reformat_cards(cards)
 
     # Add duplicate Indentity entries with short versions of names
     for card in cards:
-        if card[constants.TYPE].lower() == "identity":
+        side = card[constants.NAME][constants.SIDE].lower()
+        if card[constants.TYPE].lower() == "identity" and side == 'runner':
             card_name = card[constants.NAME]
             new_card_name = card_name[:card_name.index(':')]
             cards_map[new_card_name] = card
-            print "="*5
-            print type(card)
-            print "="*5
     
     return cards_map
 
 
+def clean_card_data(cards):
+    attrs_to_clean = [constants.NAME]
+    cleaned_cards = []
+    for card in cards:
+        new_card = list(card)
+        for attr in attrs_to_clean:
+            if not isinstance(card[attr], basestring):
+                continue
+            clean_attr = str(bs4.BeautifulSoup(card[attr]))
+            new_card[attr] = clean_attr
+        cleaned_cards.append(tuple(new_card))
+    return cleaned_cards
+
+
 def find_flaws(deck, all_cards):
-    print deck['identity']
-    print all_cards[deck['identity']]
-    side = all_cards[deck['identity']][constants.SIDE]
+    print deck.identity
+    print all_cards[deck.identity]
+    side = all_cards[deck.identity][constants.SIDE]
     flaws_map = {"corp": find_corp_flaws, "runner": find_runner_flaws}
     return flaws_map[side.lower()](deck, all_cards)
 
 def find_corp_flaws(deck, all_cards):
     flaws = []
-    cat_deck = categorize_deck(deck)
-    ice = cat_deck['main']['ice']
+    cat_deck = deck.cat_cards
+    ice = get_category_from_cat_deck('ice', cat_deck)
     if len(ice) == 0:
         flaws.append("No ice!")
     return flaws
 
 def find_runner_flaws(deck, all_cards):
     flaws = []
-    cat_deck = categorize_deck(deck)
-    print cat_deck['main'].keys()
+    cat_deck = deck.cat_cards
     icebreakers = get_category_from_cat_deck('Program', cat_deck)
     if len(icebreakers) == 0:
         flaws.append("No programs!!")
@@ -159,7 +186,7 @@ def find_runner_flaws(deck, all_cards):
 
 def get_category_from_cat_deck(category, deck):
     try:
-        subdeck = deck['main'][category]
+        subdeck = deck[category]
     except KeyError:
         subdeck = []
     return subdeck
