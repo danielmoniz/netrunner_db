@@ -17,7 +17,7 @@ def hello_world():
 def read_deck():
     if request.method == 'GET':
         return render_template('read_deck.html')
-    all_cards = deck_reader.get_all_cards()
+    all_cards = deck_reader.get_card_map_of_all_cards()
     #print all_cards
 
     deck_data = request.form['deck_data']
@@ -27,8 +27,28 @@ def read_deck():
     flaws = deck_reader.find_flaws(deck, all_cards)
     #flaws = []
 
-    deck_analysis = []
-    deck_analysis.append(analyze.total_deck_cost(deck))
+    # test
+    import data
+    data.get_icebreakers(deck)
+    data.get_ai(deck)
+    data.count_subtypes(deck)
+    data.count_types(deck)
+    data.get_cards_of_type('program', deck)
+    print "TEST: Sure Gamble has text:", all_cards['Sure Gamble']['text']
+    data.find_cards_with_exact_text("Gain", deck)
+    data.find_cards_with_all_words("Gain credits", deck)
+    advanced_results = data.advanced_text_search(
+        deck,
+        mandatory_words="credit",
+        partial_words=["gain", "take"]
+    )
+    print '*'*10
+    print "ADVANCED CARD SEARCH:"
+    for card in advanced_results:
+        print card.name
+
+    deck_analysis = analyze.run_analyses(deck)
+    #deck_analysis.append(analyze.total_deck_cost(deck))
 
     return render_template(
         'read_deck.html', 

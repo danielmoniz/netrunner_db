@@ -12,7 +12,7 @@ class Deck(object):
         self.identity = identity
         self.card_map = full_card_map
         if not full_card_map:
-            self.card_map = deck_reader.get_all_cards()
+            self.card_map = deck_reader.get_card_map_of_all_cards()
 
         self.cards = []
         for card in cards:

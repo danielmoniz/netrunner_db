@@ -11,8 +11,8 @@ import netrunner_constants as constants
 deck_filename = "weyland.txt"
 
 
-def get_all_cards():
-    """Return a list of every Netrunner card in the database.
+def get_card_map_of_all_cards():
+    """Return a map of every Netrunner card in the database.
     Retrieve from redis cache if possible.
     """
     NETRUNNER_CARD_LIST = 'netrunner:cards:all'

@@ -1,5 +1,14 @@
 import netrunner_constants as constants
 
+def run_analyses(deck):
+    analyses = []
+    analysis_ftns = [
+        total_deck_cost,
+    ]
+    for ftn in analysis_ftns:
+        analyses.append(ftn(deck))
+    return analyses
+
 def total_deck_cost(deck):
     cost = 0
     total_cost = 0
