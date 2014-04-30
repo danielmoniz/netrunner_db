@@ -13,6 +13,7 @@ def total_deck_cost(deck):
     cost = 0
     total_cost = 0
     return_costs = []
+    return_costs.append("Deck Cost (cost, total_cost)")
     for card in deck.cards:
         card_name = card.name
         card_cost = int(card.cost)

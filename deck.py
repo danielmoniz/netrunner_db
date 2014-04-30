@@ -5,6 +5,7 @@ import bs4
 
 import netrunner_constants as constants
 import card as card_module
+import data
 
 class Deck(object):
 
@@ -28,6 +29,7 @@ class Deck(object):
 
         sum_list = [card.quantity for card in self.cards]
         self.total_cards = sum(sum_list)
+        self.total_unique_cards = len(self.cards)
 
     def __getitem__(self, index):
         return self.cards[index]

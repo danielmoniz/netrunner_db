@@ -29,11 +29,8 @@ def read_deck():
 
     # test
     import data
-    data.get_icebreakers(deck)
-    data.get_ai(deck)
     data.count_subtypes(deck)
     data.count_types(deck)
-    data.get_cards_of_type('program', deck)
     print "TEST: Sure Gamble has text:", all_cards['Sure Gamble']['text']
     data.find_cards_with_exact_text("Gain", deck)
     data.find_cards_with_all_words("Gain credits", deck)
@@ -46,6 +43,17 @@ def read_deck():
     print "ADVANCED CARD SEARCH:"
     for card in advanced_results:
         print card.name
+    test_cards = data.get_cards_of_type('program', deck)
+    for card in test_cards:
+        print card
+    print '*'*10
+    icebreakers = data.get_icebreakers(deck)
+    for card in icebreakers:
+        print card
+    ai = data.get_ai(deck)
+    print '*'*10
+    for card in ai:
+        print card
 
     deck_analysis = analyze.run_analyses(deck)
     #deck_analysis.append(analyze.total_deck_cost(deck))

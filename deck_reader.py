@@ -11,10 +11,8 @@ import netrunner_constants as constants
 deck_filename = "weyland.txt"
 
 
-def get_card_map_of_all_cards():
-    """Return a map of every Netrunner card in the database.
-    Retrieve from redis cache if possible.
-    """
+def get_all_cards():
+    """Return a list of every card in the card pool."""
     NETRUNNER_CARD_LIST = 'netrunner:cards:all'
     redis_instance = redis.StrictRedis(host="localhost", port=6379, db=0)
     redis_cards = redis_instance.get(NETRUNNER_CARD_LIST)
@@ -33,28 +31,31 @@ def get_card_map_of_all_cards():
             real_card = card_module.DetailedCard(card)
             real_cards.append(real_card)
 
-        # Add duplicate Indentity entries with short versions of names
-        # @TODO Ensure that the new card has the key of the shortened name (eg.
-        # 'Andromeda' instead of 'Andromeda: Dispo...'.
-        new_cards = []
-        for card in real_cards:
-            if card.type.lower() == "identity" and card.side.lower() == 'runner':
-                if ':' not in card.name:
-                    continue
-                new_card_name = card.name[:card.name.index(':')]
-                new_card = card_module.DetailedCard(card)
-                new_card.name = new_card_name
-                new_cards.append(new_card)
-        real_cards.extend(new_cards)
-
         cards = clean_card_data(real_cards)
         json_dump_list = []
         for card in cards:
             json_dump_list.append(card.__dict__)
         json_dump = json.dumps(json_dump_list)
         redis_instance.set(NETRUNNER_CARD_LIST, json_dump)
+    return cards
+
+
+def get_card_map_of_all_cards():
+    """Return a map of every Netrunner card in the database.
+    Retrieve from redis cache if possible.
+    """
+    cards = get_all_cards()
 
     cards_map = reformat_cards(cards)
+
+    # Add duplicate Indentity entries with short versions of names
+    for card in cards:
+        if card.type.lower() == "identity" and card.side.lower() == 'runner':
+            if ':' not in card.name:
+                continue
+            new_card_name = card.name[:card.name.index(':')]
+            new_card = card_module.DetailedCard(card)
+            cards_map[new_card_name] = new_card.__dict__
 
     return cards_map
 

@@ -5,6 +5,11 @@ class Card(object):
     def __init__(self, basic_card):
         self.name = basic_card
 
+    def __str__(self):
+        if hasattr(self, "type"):
+            return "{}: {}".format(self.type, self.name)
+        return self.name
+
 class DetailedCard(Card):
     def __init__(self, card):
         # find a way to test for being iterable and not a dict

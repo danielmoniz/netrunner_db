@@ -8,24 +8,35 @@ def get_ai(deck):
     return get_cards_of_subtype('ai', deck)
 
 
-def get_cards_of_type(card_type, deck):
+def get_cards_of_attr(attr, attr_value, deck):
     cards = []
     for card in deck.cards:
-        if card.type.lower() == card_type.lower():
+        card_attr_value = getattr(card, attr).lower()
+        if isinstance(attr_value, basestring):
+            attr_value = attr_value.lower()
+        if isinstance(card_attr_value, basestring):
+            card_attr_value = card_attr_value.lower()
+        if attr == 'subtype':
+            subtypes = parse_subtype(card_attr_value)
+            if attr_value in subtypes:
+                cards.append(card)
+            continue
+        if card_attr_value == attr_value:
             print "{}: {}".format(card.type, card.name)
             cards.append(card)
     return cards
 
 
+def get_cards_of_type(card_type, deck):
+    return get_cards_of_attr('type', card_type, deck)
+
+def parse_subtype(subtype_text):
+    subtypes = subtype_text.lower().split(' - ')
+    return subtypes
+
+
 def get_cards_of_subtype(subtype, deck):
-    cards = []
-    for card in deck.cards:
-        subtypes = card.subtype.lower()
-        subtypes = subtypes.split(' - ')
-        if subtype in subtypes:
-            cards.append(card)
-            print "{}: {}".format(subtype, card.name)
-    return cards
+    return get_cards_of_attr('subtype', subtype, deck)
 
 
 def find_cards_with_exact_text(text, deck):
@@ -56,7 +67,7 @@ def advanced_text_search(deck, exact_text=None, mandatory_words=None, partial_wo
     if not exact_text and not mandatory_words and not partial_match_words:
         return deck.cards
     cards = []
-    current_card_set = deck.cards
+    current_card_set = deck.cards[:]
     if exact_text:
         for card in current_card_set[:]:
             if not exact_match_is_in_text(exact_text, card.text):
