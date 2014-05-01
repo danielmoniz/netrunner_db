@@ -17,21 +17,21 @@ def hello_world():
 def read_deck():
     if request.method == 'GET':
         return render_template('read_deck.html')
-    all_cards = deck_reader.get_card_map_of_all_cards()
-    #print all_cards
+    all_cards = deck_reader.get_all_cards()
+    full_card_map = deck_reader.get_card_map_of_all_cards()
 
     deck_data = request.form['deck_data']
-    deck = deck_module.Deck.build_deck_from_text(deck_data, all_cards)
+    deck = deck_module.Deck.build_deck_from_text(deck_data, full_card_map)
     if not deck:
         return "Deck was invalid."
-    flaws = deck_reader.find_flaws(deck, all_cards)
+    flaws = deck_reader.find_flaws(deck, full_card_map)
     #flaws = []
 
     # test
     import data
     data.count_subtypes(deck)
     data.count_types(deck)
-    print "TEST: Sure Gamble has text:", all_cards['Sure Gamble']['text']
+    print "TEST: Sure Gamble has text:", full_card_map['Sure Gamble']['text']
     data.find_cards_with_exact_text("Gain", deck)
     data.find_cards_with_all_words("Gain credits", deck)
     advanced_results = data.advanced_text_search(
@@ -54,6 +54,39 @@ def read_deck():
     print '*'*10
     for card in ai:
         print card
+    print '*'*10
+    diff_cost_cards = all_cards[:]
+    #diff_cost_cards = data.get_cards_of_attr("side", "runner", diff_cost_cards)
+    #diff_cost_cards = data.get_cards_of_attr("identity", "criminal", diff_cost_cards)
+
+    diff_cards = all_cards[:]
+    for card in diff_cards:
+        if card.cost == 'X':
+            continue
+            print card.name, card.cost, card.totalcost, card.loyalty
+        if card.type == "Identity" or card.type == "Agenda":
+            continue
+        try:
+            card_cost = int(card.cost)
+            card_totalcost = int(card.totalcost)
+            if int(card.totalcost) != int(card.cost) + int(card.loyalty):
+                print card.name, card.cost, card.totalcost, card.loyalty
+        except ValueError:
+            print card.name, card.cost, card.totalcost, card.loyalty
+
+    import pprint
+    pprint.pprint(full_card_map['SEA Source'])
+
+    print '*'*10
+    # lambda comparison test
+    attr = 'memory'
+    attr_value = 1
+    test_cards = data.get_cards_of_attr(attr, attr_value, deck)
+    print '*'*10
+    if test_cards:
+        for card in test_cards:
+            print card, "{}: {}".format(attr, getattr(card, attr))
+
 
     deck_analysis = analyze.run_analyses(deck)
     #deck_analysis.append(analyze.total_deck_cost(deck))
