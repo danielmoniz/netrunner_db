@@ -39,6 +39,7 @@ class Deck(object):
 
     def __str__(self):
         return_str = ""
+        return_str += "{}\n\n".format(self.identity)
         for card in self.cards:
             return_str += str(card) + "\n"
         return return_str
