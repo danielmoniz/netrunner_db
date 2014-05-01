@@ -31,8 +31,17 @@ class Deck(object):
         self.total_cards = sum(sum_list)
         self.total_unique_cards = len(self.cards)
 
+    def __iter__(self):
+        return iter(self.cards)
+
     def __getitem__(self, index):
         return self.cards[index]
+
+    def __str__(self):
+        return_str = ""
+        for card in self.cards:
+            return_str += str(card) + "\n"
+        return return_str
 
     @classmethod
     def build_deck_from_text(cls, deck_text, full_card_map):

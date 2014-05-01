@@ -6,9 +6,13 @@ class Card(object):
         self.name = basic_card
 
     def __str__(self):
+        return_str = ""
         if hasattr(self, "type"):
-            return "{}: {}".format(self.type, self.name)
-        return self.name
+            return_str += "{}: ".format(self.type)
+        return_str += self.name
+        if hasattr(self, "quantity"):
+            return_str += " (x{})".format(self.quantity)
+        return return_str
 
 class DetailedCard(Card):
     def __init__(self, card):
