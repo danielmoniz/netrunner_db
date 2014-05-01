@@ -34,12 +34,13 @@ def read_deck():
     print "TEST: Sure Gamble has text:", full_card_map['Sure Gamble']['text']
     data.find_cards_with_exact_text("Gain", deck)
     data.find_cards_with_all_words("Gain credits", deck)
+
+    print '*'*10
     advanced_results = data.advanced_text_search(
         deck,
         mandatory_words="credit",
         partial_words=["gain", "take"]
     )
-    print '*'*10
     print "ADVANCED CARD SEARCH:"
     for card in advanced_results:
         print card.name
@@ -59,23 +60,7 @@ def read_deck():
     #diff_cost_cards = data.get_cards_of_attr("side", "runner", diff_cost_cards)
     #diff_cost_cards = data.get_cards_of_attr("identity", "criminal", diff_cost_cards)
 
-    diff_cards = all_cards[:]
-    for card in diff_cards:
-        if card.cost == 'X':
-            continue
-            print card.name, card.cost, card.totalcost, card.loyalty
-        if card.type == "Identity" or card.type == "Agenda":
-            continue
-        try:
-            card_cost = int(card.cost)
-            card_totalcost = int(card.totalcost)
-            if int(card.totalcost) != int(card.cost) + int(card.loyalty):
-                print card.name, card.cost, card.totalcost, card.loyalty
-        except ValueError:
-            print card.name, card.cost, card.totalcost, card.loyalty
-
     import pprint
-    pprint.pprint(full_card_map['SEA Source'])
 
     print '*'*10
     # lambda comparison test
@@ -86,6 +71,19 @@ def read_deck():
     if test_cards:
         for card in test_cards:
             print card, "{}: {}".format(attr, getattr(card, attr))
+
+    print '*'*10
+    test_cards = data.advanced_text_search(
+        all_cards,
+        exact_text=("at least", "advancement token"),
+        #mandatory_words=(,),
+    )
+    for card in test_cards:
+        print card
+
+
+    test_card = full_card_map["The Cleaners"]
+    pprint.pprint(test_card)
 
 
     deck_analysis = analyze.run_analyses(deck)
@@ -101,6 +99,9 @@ def read_deck():
         flaws=flaws,
         analysis=deck_analysis,
     )
+
+def print_data():
+    print '*'*10
 
 if __name__ == '__main__':
     app.run(debug=True)

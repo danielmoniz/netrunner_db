@@ -1,4 +1,4 @@
-
+import data
 
 class Card(object):
 
@@ -119,6 +119,9 @@ class DetailedCard(Card):
         else:
             print "Failed to properly make card!"
             return False
+        
+        self.actions, self.actions_with_draw = data.get_number_of_actions(self)
+
 
 CARD_ID = 0
 NAME = 1

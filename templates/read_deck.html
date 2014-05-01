@@ -31,12 +31,14 @@
 	    <input type='submit' />
 	</form>
     </div>
-    <div style="float:top;">
+    <div style="float:left; width:100%;">
 	<b>Stats:</b><br />
 	{% for stat in analysis %}
+	    <p>
 	    {% for substat in stat %}
 		{{ substat }}<br />
 	    {% endfor %}
+	    </p>
 	{% endfor %}
     </div>
 
