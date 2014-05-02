@@ -33,6 +33,8 @@ def get_general_analysis_ftns():
         total_cost_without_duplicates,
         mean_cost,
         max_cost,
+        total_actions,
+        total_actions_with_draw,
     ]
     return general_analysis_ftns
 
@@ -114,6 +116,12 @@ def mean_cost_to_strength_ratio_without_duplicates(cards, **kwargs):
 def total_cost_without_duplicates(cards, **kwargs):
     total_cost = data.sum_over_attr("cost", cards, convert_type=int, unique=True)
     return total_cost
+
+def total_actions(cards, **kwargs):
+    return data.get_total_actions(cards)[0]
+
+def total_actions_with_draw(cards, **kwargs):
+    return data.get_total_actions(cards)[1]
 
 # ----------
 

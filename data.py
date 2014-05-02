@@ -59,13 +59,16 @@ def get_list_of_attr(attr, deck, unique=False, convert_type=None):
                     attr_list.append(attr_value)
     return attr_list
 
-def get_actions(deck):
-    actions = []
+def get_total_actions(deck):
+    actions = 0
+    actions_with_draw = 0
     for card in deck:
-        actions.append(get_number_of_actions(card))
-    return actions
+        new_actions, new_actions_with_draw = get_card_actions(card, unique=False)
+        actions += new_actions
+        actions_with_draw += new_actions_with_draw
+    return actions, actions_with_draw
 
-def get_number_of_actions(card):
+def get_card_actions(card, unique=True):
     if card.type.lower() == 'identity':
         return (0, 0)
     actions = 1 # one action to play card
@@ -78,6 +81,9 @@ def get_number_of_actions(card):
         actions += int(card.cost)
 
     actions_with_draw = actions + 1
+    print card.name, actions, actions_with_draw
+    if not unique:
+        return actions * int(card.quantity), actions_with_draw * int(card.quantity)
     return actions, actions_with_draw
 
 def get_icebreakers(deck):
