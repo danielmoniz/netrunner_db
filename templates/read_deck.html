@@ -35,11 +35,9 @@
     </div>
     <div style="float:left; width:100%;">
 	<b>Stats:</b><br />
-	{#
-	{% for analysis_block in general_analysis %}
-	#}
+	{% for analysis_block in analysis %}
 	    <table class="analysis_block">
-	    {% for row in general_analysis %}
+	    {% for row in analysis_block %}
 		<tr>
 		{% for item in row %}
 		    <td>{{ item }}</td>
@@ -47,9 +45,7 @@
 		</tr>
 	    {% endfor %}
 	    </table>
-	{#
 	{% endfor %}
-	#}
     </div>
 
 </html>

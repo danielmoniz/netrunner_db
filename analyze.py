@@ -25,31 +25,52 @@ def get_ice_analysis_ftns():
     ]
     return ice_analysis_ftns
 
+def get_icebreaker_analysis_ftns():
+    ice_analysis_ftns = [
+        total,
+        total_cost,
+        mean_strength,
+        max_strength,
+        cost_to_strength_ratio,
+    ]
+    return ice_analysis_ftns
+
 def get_ice_analysis_ftn_names():
-    ice_analysis_ftn_names = [ftn.__name__.capitalize() for ftn in get_ice_analysis_ftns()]
-    return ice_analysis_ftn_names
+    ftn_names = [ftn.__name__.capitalize() for ftn in get_ice_analysis_ftns()]
+    return ftn_names
 
-def run_analyses(deck, side=None, name_of_analysis=""):
+def get_icebreaker_analysis_ftn_names():
+    ftn_names = [ftn.__name__.capitalize() for ftn in get_icebreaker_analysis_ftns()]
+    return ftn_names
+
+def get_special_analysis_ftn_names(side):
+    if side.lower() == 'corp':
+        return get_ice_analysis_ftn_names()
+    elif side.lower == 'runner':
+        return get_icebreaker_analysis_ftns
+
+def run_general_analyses(deck, side=None, name_of_analysis=""):
     analyses = []
-
-
     analysis_ftns = get_general_analysis_ftns()
-    """
-    if side == 'corp':
-        analysis_ftns.extend(corp_analysis_ftns)
-    elif side == 'runner':
-        analysis_ftns.extend(runner_analysis_ftns)
-    """
+
+    for ftn in analysis_ftns:
+        analyses.append(ftn(deck))
+    return analyses
+
+def run_special_analyses(deck, side=None, name_of_analysis=""):
+    analyses = []
+    analysis_ftns = []
+    if side.lower() == 'corp':
+        analysis_ftns.extend(get_ice_analysis_ftns())
+    elif side.lower() == 'runner':
+        analysis_ftns.extend(get_icebreaker_analysis_ftns())
 
     for ftn in analysis_ftns:
         analyses.append(ftn(deck))
     return analyses
 
 def total(cards):
-    """Note that 'unique' is set to true for summing the 'quantity' attribute.
-    If it wasn't, cards would be double- and triple-counted.
-    """
-    return data.sum_over_attr('quantity', cards, unique=True, convert_type=int)
+    return data.total_cards_in_list(cards)
 
 def total_as_ratio(cards):
     return 'TBC'

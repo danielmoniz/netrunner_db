@@ -45,7 +45,7 @@ class Deck(object):
         return return_str
 
     def __len__(self):
-        return self.total_cards
+        return len(self.cards)
 
     @classmethod
     def build_deck_from_text(cls, deck_text, full_card_map):

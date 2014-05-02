@@ -12,12 +12,14 @@ def average_over_attr(attr, deck, average="mean", decimal_places=2, unique=False
     attr_list = get_list_of_attr(attr, deck, unique=unique, convert_type=convert_type)
     if average == "mean":
         mean = sum(attr_list) / total_cards_in_list(deck)
-        print sum(attr_list), total_cards_in_list(deck)
         return round(mean, decimal_places)
     elif average == "mode":
         return collections.Counter.attr_list.most_common(1)
 
 def total_cards_in_list(cards):
+    """Note that 'unique' is set to true for summing the 'quantity' attribute.
+    If it wasn't, cards would be double- and triple-counted.
+    """
     return sum_over_attr('quantity', cards, unique=True, convert_type=int)
 
 def sum_over_attr(attr, deck, unique=False, convert_type=None):
@@ -27,6 +29,8 @@ def sum_over_attr(attr, deck, unique=False, convert_type=None):
     return sum(attr_list)
 
 def get_list_of_attr(attr, deck, unique=False, convert_type=None):
+    if not convert_type:
+        convert_type = unicode
     attr_list = []
     for card in deck:
         attr_value = getattr(card, attr)
@@ -63,6 +67,9 @@ def get_number_of_actions(card):
 def get_icebreakers(deck):
     return get_cards_of_subtype('icebreaker', deck)
 
+def get_ice(deck):
+    return get_cards_of_type('ice', deck)
+
 
 def get_ai(deck):
     return get_cards_of_subtype('ai', deck)
@@ -92,18 +99,13 @@ def get_cards_of_attr(attr, attr_value, deck, compare=None):
     """Note that the default comparison operator is equality.
     This should NOT be specified in a parameter if equality is desired.
     """
-    #print "Deck:", deck
-    print '*'*20
-    print "in get_cards_of_attr for attr:", attr
     attr_convert, compare = get_attr_conversion(compare)
     cards = []
     for card in deck:
         card_attr_value = getattr(card, attr).lower()
-        print card_attr_value
         if card_attr_value in ("", "-"):
             continue
         if card_attr_value.lower() == 'x':
-            print card
             cards.append(card)
             continue
         try:
@@ -125,7 +127,6 @@ def get_cards_of_attr(attr, attr_value, deck, compare=None):
                 cards.append(card)
             continue
         if compare(card_attr_value, attr_value):
-            print card
             cards.append(card)
     return cards
 
@@ -146,22 +147,17 @@ def find_cards_with_exact_text(text, deck):
     cards = []
     for card in deck:
         if exact_match_is_in_text(text, card.text):
-            print card.name
             cards.append(card)
     return cards
 
 
 def find_cards_with_all_words(text, deck):
     """Takes space-separated text."""
-    print '*'*10
-    print text
-    print text.lower().split(' ')
     cards = []
     words = text.split(' ')
     for card in deck:
         words_in_text = all_words_are_in_text(words, card.text)
         if words_in_text:
-            print card.name
             cards.append(card)
     return cards
 
@@ -219,7 +215,6 @@ def count_types(deck):
             types_in_deck[card.type] = card.quantity
     type_count = [(key, value) for key, value in types_in_deck.iteritems()]
     type_count.sort(key=lambda tup: tup[1], reverse=True)
-    print type_count
     return type_count
 
 
