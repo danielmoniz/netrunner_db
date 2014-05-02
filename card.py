@@ -8,8 +8,9 @@ class Card(object):
     def __str__(self):
         return_str = ""
         return_str += self.name
+        num_tabs =  (3 - len(self.name) / 8) + 2
         if hasattr(self, "type"):
-            return_str += " ({})".format(self.type)
+            return_str += "\t" * num_tabs + "({})".format(self.type)
         if hasattr(self, "quantity"):
             return_str += " x{}".format(self.quantity)
         return return_str

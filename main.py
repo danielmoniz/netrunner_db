@@ -82,9 +82,8 @@ def read_deck():
         print card
 
 
-    test_card = full_card_map["The Cleaners"]
+    test_card = full_card_map["Hadrian's Wall"]
     pprint.pprint(test_card)
-
 
     deck_analysis = analyze.run_analyses(deck)
     #deck_analysis.append(analyze.total_deck_cost(deck))

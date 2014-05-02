@@ -44,6 +44,9 @@ class Deck(object):
             return_str += str(card) + "\n"
         return return_str
 
+    def __len__(self):
+        return self.total_cards
+
     @classmethod
     def build_deck_from_text(cls, deck_text, full_card_map):
         """Parse a text file for cards that make up a deck.

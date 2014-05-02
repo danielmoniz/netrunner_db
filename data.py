@@ -1,3 +1,16 @@
+import collections
+
+def average_over_attr(attr, deck, average="mean", unique=False, convert_type=None):
+    if average == "median":
+        raise NotImplementedError
+    if not convert_type:
+        convert_type = float
+    attr_list = get_list_of_attr(attr, deck, unique=unique, convert_type=convert_type)
+    if average == "mean":
+        return sum(attr_list) / len(deck)
+    elif average == "mode":
+        return collections.Counter.attr_list.most_common(1)
+
 def sum_over_attr(attr, deck, unique=False, convert_type=None):
     if not convert_type:
         convert_type = float
