@@ -53,41 +53,6 @@ def read_deck():
 
     #deck_analysis = analyze.run_analyses(deck)
 
-    general_corp_types = [
-        "All",
-        "ICE",
-        "Asset",
-        "Agenda",
-        "Operation",
-        "Upgrade",
-    ]
-
-    general_runner_types = [
-        "All",
-        "Icebreaker",
-        "Program",
-        "Hardware",
-        "Resource",
-        "Event",
-    ]
-
-    general_corp_types_map = {
-        "All": deck,
-        "ICE": data.get_cards_of_type("ice", deck),
-        "Asset": data.get_cards_of_type("asset", deck),
-        "Agenda": data.get_cards_of_type("agenda", deck),
-        "Operation": data.get_cards_of_type("operation", deck),
-        "Upgrade": data.get_cards_of_type("upgrade", deck),
-    }
-    general_runner_types_map = {
-        "All": deck,
-        "Icebreaker": data.get_cards_of_subtype("icebreaker", deck),
-        "Program": data.get_cards_of_type("program", deck),
-        "Hardware": data.get_cards_of_type("hardware", deck),
-        "Event": data.get_cards_of_type("event", deck),
-        "Resource": data.get_cards_of_type("resource", deck),
-    }
-
     def get_subtypes_map(card_subtypes, cards):
         card_subtypes_map = {}
         for card_subtype in card_subtypes:
@@ -98,34 +63,35 @@ def read_deck():
         return card_subtypes_map
 
     if deck.side.lower() == "corp":
-        ice = data.get_cards_of_type("ice", deck)
-        mandatory_ice_types = ['Barrier', 'Code Gate', 'Sentry']
-        ice_types = ["All"] + data.get_subtypes(ice, mandatory_ice_types)
-        ice_types_map = get_subtypes_map(ice_types, ice)
+        special_cards = data.get_cards_of_type("ice", deck)
+        mandatory_subtypes = ['Barrier', 'Code Gate', 'Sentry']
+        special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
+        special_map = get_subtypes_map(special_types, special_cards)
 
-        general_types = general_corp_types
-        general_map = general_corp_types_map
-        special_types = ice_types
-        special_map = ice_types_map
+        general_types = analyze.get_general_types()[deck.side.lower()]
+        general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
     else:
-        icebreakers = data.get_cards_of_subtype("icebreaker", deck)
-        mandatory_icebreaker_types = ['AI', 'Fracter', 'Decoder', 'Killer']
-        icebreaker_types = ["All"] + data.get_subtypes(icebreakers, mandatory_icebreaker_types)
-        icebreaker_types_map = get_subtypes_map(icebreaker_types, icebreakers)
+        special_cards = data.get_cards_of_subtype("icebreaker", deck)
+        mandatory_subtypes = ['AI', 'Fracter', 'Decoder', 'Killer']
+        special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
+        special_map = get_subtypes_map(special_types, special_cards)
 
-        general_types = general_runner_types
-        general_map = general_runner_types_map
-        special_types = icebreaker_types
-        special_map = icebreaker_types_map
+        general_types = analyze.get_general_types()[deck.side.lower()]
+        general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
 
     analysis_blocks = []
     
     general_analysis_block = []
     general_analysis_block.append([""] + analyze.get_general_analysis_ftn_names())
+    for card in deck:
+        print card
     for card_type in general_types:
         column = []
         column.append(card_type)
         cards = general_map[card_type]
+        print '#'*10
+        for card in cards:
+            print card
         analysis = analyze.run_general_analyses(cards)
         column.extend(analysis)
         general_analysis_block.append(column)

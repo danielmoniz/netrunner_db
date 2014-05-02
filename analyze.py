@@ -1,6 +1,5 @@
 import data
 
-
 def get_general_analysis_ftns():
     general_analysis_ftns = [
         total,
@@ -128,3 +127,44 @@ def average_agenda_points_scored_to_win(deck):
 def total_deck_cost(deck):
     return ("Total cost of deck", data.sum_over_attr("cost", deck, convert_type=int))
 
+
+def get_general_types():
+    general_corp_types = [
+        "All",
+        "ICE",
+        "Asset",
+        "Agenda",
+        "Operation",
+        "Upgrade",
+    ]
+    general_runner_types = [
+        "All",
+        "Icebreaker",
+        "Program",
+        "Hardware",
+        "Resource",
+        "Event",
+    ]
+    return {'corp': general_corp_types, 'runner': general_runner_types}
+
+def get_general_types_maps(cards):
+    general_corp_types_map = {
+        "All": cards,
+        "ICE": data.get_cards_of_type("ice", cards),
+        "Asset": data.get_cards_of_type("asset", cards),
+        "Agenda": data.get_cards_of_type("agenda", cards),
+        "Operation": data.get_cards_of_type("operation", cards),
+        "Upgrade": data.get_cards_of_type("upgrade", cards),
+    }
+    general_runner_types_map = {
+        "All": cards,
+        "Icebreaker": data.get_cards_of_subtype("icebreaker", cards),
+        "Program": data.get_cards_of_type("program", cards),
+        "Hardware": data.get_cards_of_type("hardware", cards),
+        "Event": data.get_cards_of_type("event", cards),
+        "Resource": data.get_cards_of_type("resource", cards),
+    }
+    return {
+        'corp': general_corp_types_map, 
+        'runner': general_runner_types_map
+    }
