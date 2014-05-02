@@ -55,6 +55,7 @@ class Deck(object):
         ->  Eg. if 'Snare!' is written twice, it should either count as one or two 
             Snares, but not two Snare entries.
         """
+        valid_cards = {}
         deck_cards = []
         identity = None
         deck_info = deck_text.split('\n')
@@ -63,6 +64,9 @@ class Deck(object):
             if not card_info:
                 continue
             card_name, quantity = card_info
+            try:
+                valid_cards[card_name] += int(quantity)
+            except KeyError:
             full_card = full_card_map[card_name]
             if 'Noise' in card_name:
                 print full_card
