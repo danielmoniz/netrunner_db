@@ -45,6 +45,8 @@
 	    {% for row in analysis_block.table %}
 		{% if loop.first %}
 		<tr class="table_header table_top_header">
+		{% else %}
+		<tr>
 		{% endif %}
 		{% for item in row %}
 		    <td {% if loop.first %}
@@ -52,7 +54,6 @@
 			{{ item }}
 		    </td>
 		{% endfor %}
-		{% if loop.first %}</b>{% endif %}
 		</tr>
 	    {% endfor %}
 	    </table><br />

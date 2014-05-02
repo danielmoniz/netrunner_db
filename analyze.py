@@ -22,7 +22,7 @@ def run_special_analyses(cards, side, **kwargs):
     elif side.lower() == 'runner':
         analysis_ftns.extend(get_icebreaker_analysis_ftns())
 
-    analysis_ftns = get_general_analysis_ftns()
+    #analysis_ftns = get_general_analysis_ftns()
     return run_analysis_ftns(analysis_ftns, cards, **kwargs)
 
 def get_general_analysis_ftns():
@@ -102,6 +102,8 @@ def max_strength(cards, **kwargs):
 def mean_cost_to_strength_ratio(cards, **kwargs):
     mean_cost = data.average_over_attr("cost", cards)
     mean_strength = data.average_over_attr("strength", cards)
+    if not mean_strength:
+        return '/'
     ratio = float(mean_cost) / float(mean_strength)
     return round(ratio, 2)
     #return get_percent_from_decimal(ratio)
@@ -109,6 +111,8 @@ def mean_cost_to_strength_ratio(cards, **kwargs):
 def mean_cost_to_strength_ratio_without_duplicates(cards, **kwargs):
     mean_cost = data.average_over_attr("cost", cards, unique=True)
     mean_strength = data.average_over_attr("strength", cards, unique=True)
+    if not mean_strength:
+        return '/'
     ratio = float(mean_cost) / float(mean_strength)
     return round(ratio, 2)
     #return get_percent_from_decimal(ratio)
