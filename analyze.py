@@ -1,39 +1,89 @@
 import data
 
-def run_analyses(deck, name_of_analysis=""):
-    analyses = []
-    neutral_analysis_ftns = [
-        total_deck_cost,
-    ]
-    corp_analysis_ftns = [
-        total_cost_of_ice,
-        number_of_agenda_points,
-    ]
-    runner_analysis_ftns = [
-        total_cost_of_icebreakers,
-        total_cost_of_unique_icebreakers,
-        mean_cost_of_icebreakers,
-    ]
 
-    analysis_ftns = neutral_analysis_ftns
-    if deck.side.lower() == 'corp':
+def get_general_analysis_ftns():
+    general_analysis_ftns = [
+        total,
+        total_as_ratio,
+        total_cost,
+        mean_cost,
+        max_cost,
+    ]
+    return general_analysis_ftns
+
+def get_general_analysis_ftn_names():
+    general_analysis_ftn_names = [ftn.__name__.capitalize() for ftn in get_general_analysis_ftns()]
+    return general_analysis_ftn_names
+
+def get_ice_analysis_ftns():
+    ice_analysis_ftns = [
+        total,
+        total_cost,
+        mean_strength,
+        max_strength,
+        cost_to_strength_ratio,
+    ]
+    return ice_analysis_ftns
+
+def get_ice_analysis_ftn_names():
+    ice_analysis_ftn_names = [ftn.__name__.capitalize() for ftn in get_ice_analysis_ftns()]
+    return ice_analysis_ftn_names
+
+def run_analyses(deck, side=None, name_of_analysis=""):
+    analyses = []
+
+
+    analysis_ftns = get_general_analysis_ftns()
+    """
+    if side == 'corp':
         analysis_ftns.extend(corp_analysis_ftns)
-    elif deck.side.lower() == 'runner':
+    elif side == 'runner':
         analysis_ftns.extend(runner_analysis_ftns)
+    """
 
     for ftn in analysis_ftns:
         analyses.append(ftn(deck))
     return analyses
 
-def total_cost_of_ice(deck):
-    ice = data.get_cards_of_attr("type", "ice", deck)
-    total_cost = data.sum_over_attr("cost", ice, int)
-    return ("Total cost of ice", total_cost)
+def total(cards):
+    return len(cards)
+
+def total_as_ratio(cards):
+    return 'TBC'
+
+def total_cost(cards):
+    total_cost = data.sum_over_attr("cost", cards, int)
+    return total_cost
+
+def total_cost(cards):
+    total_cost = data.sum_over_attr("cost", cards, convert_type=int)
+    return total_cost
+
+def mean_cost(cards):
+    mean = data.average_over_attr("cost", cards)
+    return mean
+
+def max_cost(cards):
+    costs = data.get_list_of_attr("cost", cards, convert_type=int)
+    if not costs:
+        return '/'
+    return max(costs)
+
+# ICE analysis functions
+
+def mean_strength(cards):
+    mean = data.average_over_attr("strength", cards)
+    return mean
+
+def max_strength(cards):
+    strengths = data.get_list_of_attr("strength", cards, convert_type=int)
+    return max(strengths)
+
+def cost_to_strength_ratio(cards):
+    return 'TBC'
 
 def total_cost_of_icebreakers(deck):
-    icebreakers = data.get_cards_of_attr("subtype", "icebreaker", deck)
-    total_cost = data.sum_over_attr("cost", icebreakers, convert_type=int)
-    return ("Total cost of icebreakers", total_cost)
+    pass
 
 def total_cost_of_unique_icebreakers(deck):
     icebreakers = data.get_cards_of_attr("subtype", "icebreaker", deck)

@@ -85,8 +85,60 @@ def read_deck():
     test_card = full_card_map["Hadrian's Wall"]
     pprint.pprint(test_card)
 
-    deck_analysis = analyze.run_analyses(deck)
-    #deck_analysis.append(analyze.total_deck_cost(deck))
+    # ANALYSIS +++++++++++++++++++++++++++++++
+
+    #deck_analysis = analyze.run_analyses(deck)
+
+    general_corp_types = [
+        "All",
+        "ICE",
+        "Asset",
+        "Agenda",
+        "Operation",
+        "Upgrade",
+    ]
+
+    general_corp_types_map = {
+        "All": deck.cards,
+        "ICE": data.get_cards_of_type("ice", deck),
+        "Asset": data.get_cards_of_type("asset", deck),
+        "Agenda": data.get_cards_of_type("agenda", deck),
+        "Operation": data.get_cards_of_type("operation", deck),
+        "Upgrade": data.get_cards_of_type("upgrade", deck),
+    }
+
+    if deck.side == "corp":
+        ice = data.get_cards_of_type("ice", deck)
+        ice_types = list(set(data.get_list_of_attr("subtype", ice)))
+    else:
+        icebreakers = data.get_cards_of_subtype("icebreaker", deck)
+        icebreaker_types = list(set(data.get_list_of_attr("subtype", icebreakers)))
+
+
+    general_analysis_block = []
+    #general_analysis_block.append(general_corp_types)
+    general_analysis_block.append(analyze.get_general_analysis_ftn_names())
+
+    for card_type in general_corp_types:
+        column = []
+        column.append(card_type)
+        analysis = analyze.run_analyses(general_corp_types_map[card_type])
+        column.extend(analysis)
+        general_analysis_block.append(column)
+
+    special_analysis_block = []
+    special_analysis_block.append(analyze.get_ice_analysis_ftn_names)
+    if deck.side == "corp":
+        for ice_type in ice_types:
+            analysis = analyze.run_analyses(general_corp_types_map[card_type])
+            special_analysis_block.append(analysis)
+    else:
+        for icebreaker_type in icebreaker_types:
+            analysis = analyze.run_analyses(general_runner_types_map[card_type])
+            special_analysis_block.append(analysis)
+
+    print general_analysis_block
+    print special_analysis_block
 
     return render_template(
         'read_deck.html', 
@@ -96,11 +148,10 @@ def read_deck():
         side=deck.side,
         cat_cards=deck.cat_cards, 
         flaws=flaws,
-        analysis=deck_analysis,
+        general_analysis=general_analysis_block,
+        special_analysis=special_analysis_block,
+        #analysis=deck_analysis,
     )
-
-def print_data():
-    print '*'*10
 
 if __name__ == '__main__':
     app.run(debug=True)
