@@ -30,28 +30,23 @@ def read_deck():
     # test
     import data
 
+    """
+    print '*'*10
+    print "ADVANCED CARD SEARCH:"
     advanced_results = data.advanced_text_search(
         deck,
         mandatory_words="credit",
         partial_words=["gain", "take"]
     )
-    print '*'*10
-    print "ADVANCED CARD SEARCH:"
     for card in advanced_results:
         print card.name
-    test_cards = data.get_cards_of_type('program', deck)
-    for card in test_cards:
-        print card
+    """
 
     import pprint
-
-
     test_card = full_card_map["Crypsis"]
-    pprint.pprint(test_card)
+    #pprint.pprint(test_card)
 
     # ANALYSIS +++++++++++++++++++++++++++++++
-
-    #deck_analysis = analyze.run_analyses(deck)
 
     def get_subtypes_map(card_subtypes, cards):
         card_subtypes_map = {}
@@ -81,16 +76,11 @@ def read_deck():
     
     general_analysis_block = []
     general_analysis_block.append([""] + analyze.get_general_analysis_ftn_names())
-    for card in deck:
-        print card
     for card_type in general_types:
         column = []
         column.append(card_type)
         cards = general_map[card_type]
-        print '#'*10
-        for card in cards:
-            print card
-        analysis = analyze.run_general_analyses(cards)
+        analysis = analyze.run_general_analyses(cards, full_deck=deck)
         column.extend(analysis)
         general_analysis_block.append(column)
 
@@ -101,7 +91,7 @@ def read_deck():
         column = []
         column.append(special_type)
         cards = special_map[special_type]
-        analysis = analyze.run_special_analyses(cards, side=deck.side)
+        analysis = analyze.run_special_analyses(cards, deck.side, full_deck=deck)
         column.extend(analysis)
         special_analysis_block.append(column)
 

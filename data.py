@@ -19,7 +19,7 @@ def average_over_attr(attr, deck, average="mean", decimal_places=2, unique=False
     if average == "mean":
         convert_type = float
     if not len(deck):
-        return "/"
+        return False
     attr_list = get_list_of_attr(attr, deck, unique=unique, convert_type=convert_type)
     if average == "mean":
         mean = sum(attr_list) / total_cards_in_list(deck)

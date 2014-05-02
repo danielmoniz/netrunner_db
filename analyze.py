@@ -1,64 +1,20 @@
 import data
 
-def get_general_analysis_ftns():
-    general_analysis_ftns = [
-        total,
-        total_as_ratio,
-        total_cost,
-        mean_cost,
-        max_cost,
-    ]
-    return general_analysis_ftns
-
-def get_general_analysis_ftn_names():
-    general_analysis_ftn_names = [ftn.__name__.capitalize() for ftn in get_general_analysis_ftns()]
-    return general_analysis_ftn_names
-
-def get_ice_analysis_ftns():
-    ice_analysis_ftns = [
-        total,
-        total_cost,
-        mean_strength,
-        max_strength,
-        cost_to_strength_ratio,
-    ]
-    return ice_analysis_ftns
-
-def get_icebreaker_analysis_ftns():
-    analysis_ftns = [
-        total,
-        total_cost,
-        mean_strength,
-        max_strength,
-        cost_to_strength_ratio,
-    ]
-    return analysis_ftns
-
-def get_ice_analysis_ftn_names():
-    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_ice_analysis_ftns()]
-    return ftn_names
-
-def get_icebreaker_analysis_ftn_names():
-    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_icebreaker_analysis_ftns()]
-    return ftn_names
-
-def get_special_analysis_ftn_names(side):
-    if side.lower() == 'corp':
-        return get_ice_analysis_ftn_names()
-    elif side.lower() == 'runner':
-        return get_icebreaker_analysis_ftn_names()
-    else:
-        raise ValueError("'side' is not Runner or Corp!")
-
-def run_general_analyses(deck, side=None, name_of_analysis=""):
+def run_analysis_ftns(analysis_ftns, cards, **kwargs):
     analyses = []
-    analysis_ftns = get_general_analysis_ftns()
 
     for ftn in analysis_ftns:
-        analyses.append(ftn(deck))
+        if not len(cards):
+            analyses.append('/')
+            continue
+        analyses.append(ftn(cards, **kwargs))
     return analyses
 
-def run_special_analyses(deck, side=None, name_of_analysis=""):
+def run_general_analyses(cards, **kwargs):
+    analysis_ftns = get_general_analysis_ftns()
+    return run_analysis_ftns(analysis_ftns, cards, **kwargs)
+
+def run_special_analyses(cards, side, **kwargs):
     analyses = []
     analysis_ftns = []
     if side.lower() == 'corp':
@@ -66,67 +22,111 @@ def run_special_analyses(deck, side=None, name_of_analysis=""):
     elif side.lower() == 'runner':
         analysis_ftns.extend(get_icebreaker_analysis_ftns())
 
-    for ftn in analysis_ftns:
-        analyses.append(ftn(deck))
-    return analyses
+    analysis_ftns = get_general_analysis_ftns()
+    return run_analysis_ftns(analysis_ftns, cards, **kwargs)
 
-def total(cards):
+def get_general_analysis_ftns():
+    general_analysis_ftns = [
+        total,
+        total_as_ratio,
+        total_cost,
+        total_cost_without_duplicates,
+        mean_cost,
+        max_cost,
+    ]
+    return general_analysis_ftns
+
+def get_ice_analysis_ftns():
+    ice_analysis_ftns = [
+        total,
+        total_cost,
+        total_cost_without_duplicates,
+        mean_strength,
+        max_strength,
+        mean_cost_to_strength_ratio,
+        mean_cost_to_strength_ratio_without_duplicates,
+    ]
+    return ice_analysis_ftns
+
+def get_icebreaker_analysis_ftns():
+    analysis_ftns = [
+        total,
+        total_cost,
+        total_cost_without_duplicates,
+        mean_strength,
+        max_strength,
+        mean_cost_to_strength_ratio,
+        mean_cost_to_strength_ratio_without_duplicates,
+    ]
+    return analysis_ftns
+
+# ANALYSIS FUNCTIONS
+
+def total(cards, **kwargs):
     return data.total_cards_in_list(cards)
 
-def total_as_ratio(cards):
-    return 'TBC'
+def total_as_ratio(cards, **kwargs):
+    deck = kwargs['full_deck']
+    set_total = data.total_cards_in_list(cards)
+    total = deck.total_cards
+    ratio = float(set_total) / float(total)
+    return get_percent_from_decimal(ratio)
 
-def total_cost(cards):
+def get_percent_from_decimal(number):
+    return str(int(round(number, 2) * 100)) + "%"
+
+def total_cost(cards, **kwargs):
     total_cost = data.sum_over_attr("cost", cards, convert_type=int)
     return total_cost
 
-def mean_cost(cards):
+def mean_cost(cards, **kwargs):
     mean = data.average_over_attr("cost", cards)
     return mean
 
-def max_cost(cards):
+def max_cost(cards, **kwargs):
     costs = data.get_list_of_attr("cost", cards, convert_type=int)
     if not costs:
         return '/'
     return max(costs)
 
-# ICE analysis functions
-
-def mean_strength(cards):
+def mean_strength(cards, **kwargs):
     mean = data.average_over_attr("strength", cards)
     return mean
 
-def max_strength(cards):
+def max_strength(cards, **kwargs):
     strengths = data.get_list_of_attr("strength", cards, convert_type=int)
     return max(strengths)
 
-def cost_to_strength_ratio(cards):
-    return 'TBC'
+def mean_cost_to_strength_ratio(cards, **kwargs):
+    mean_cost = data.average_over_attr("cost", cards)
+    mean_strength = data.average_over_attr("strength", cards)
+    ratio = float(mean_cost) / float(mean_strength)
+    return round(ratio, 2)
+    #return get_percent_from_decimal(ratio)
 
-def total_cost_of_icebreakers(deck):
-    pass
+def mean_cost_to_strength_ratio_without_duplicates(cards, **kwargs):
+    mean_cost = data.average_over_attr("cost", cards, unique=True)
+    mean_strength = data.average_over_attr("strength", cards, unique=True)
+    ratio = float(mean_cost) / float(mean_strength)
+    return round(ratio, 2)
+    #return get_percent_from_decimal(ratio)
 
-def total_cost_of_unique_icebreakers(deck):
-    icebreakers = data.get_cards_of_attr("subtype", "icebreaker", deck)
-    total_cost = data.sum_over_attr("cost", icebreakers, convert_type=int, unique=True)
-    return ("Total cost of unique icebreakers", total_cost)
+def total_cost_without_duplicates(cards, **kwargs):
+    total_cost = data.sum_over_attr("cost", cards, convert_type=int, unique=True)
+    return total_cost
 
-def mean_cost_of_icebreakers(deck):
-    icebreakers = data.get_cards_of_attr("subtype", "icebreaker", deck)
-    mean = data.average_over_attr("cost", icebreakers)
-    return ("Mean cost of icebreakers", mean)
+# ----------
 
-def number_of_agenda_points(deck):
+def number_of_agenda_points(deck, **kwargs):
     agendas = data.get_cards_of_attr("type", "agenda", deck)
     total = data.sum_over_attr("agendapoints", agendas)
     return ("Number of agenda points", total)
 
-def average_agenda_points_scored_to_win(deck):
+def average_agenda_points_scored_to_win(deck, **kwargs):
     pass
 
-def total_deck_cost(deck):
-    return ("Total cost of deck", data.sum_over_attr("cost", deck, convert_type=int))
 
+# HELPER FUNCTIONS +++++++++++++++++++++++++++++++
 
 def get_general_types():
     general_corp_types = [
@@ -168,3 +168,24 @@ def get_general_types_maps(cards):
         'corp': general_corp_types_map, 
         'runner': general_runner_types_map
     }
+
+def get_general_analysis_ftn_names():
+    general_analysis_ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_general_analysis_ftns()]
+    return general_analysis_ftn_names
+
+def get_ice_analysis_ftn_names():
+    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_ice_analysis_ftns()]
+    return ftn_names
+
+def get_icebreaker_analysis_ftn_names():
+    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_icebreaker_analysis_ftns()]
+    return ftn_names
+
+def get_special_analysis_ftn_names(side):
+    if side.lower() == 'corp':
+        return get_ice_analysis_ftn_names()
+    elif side.lower() == 'runner':
+        return get_icebreaker_analysis_ftn_names()
+    else:
+        raise ValueError("'side' is not Runner or Corp!")
+
