@@ -9,7 +9,7 @@ import data
 
 class Deck(object):
 
-    def __init__(self, cards, identity, full_card_map=None):
+    def __init__(self, cards, identity = None, full_card_map=None):
         self.identity = identity
         self.card_map = full_card_map
         if not full_card_map:
@@ -24,8 +24,15 @@ class Deck(object):
 
         self.cat_cards = self.categorize_cards()
 
-        identity_card = self.card_map[identity]
-        self.side = identity_card["side"]
+        if identity:
+            identity_card = self.card_map[identity]
+
+        if identity:
+            self.side = identity_card["side"]
+        else:
+            if not cards:
+                return False
+            self.side = self.cards[0].side
 
         sum_list = [card.quantity for card in self.cards]
         self.total_cards = sum(sum_list)
@@ -39,9 +46,11 @@ class Deck(object):
 
     def __str__(self):
         return_str = ""
-        return_str += "{}\n\n".format(self.identity)
+        if self.identity:
+            return_str += "{}\n\n".format(self.identity)
         for card in self.cards:
             return_str += str(card) + "\n"
+        print return_str
         return return_str
 
     def __len__(self):
@@ -89,8 +98,6 @@ class Deck(object):
             }
             deck_cards.append(card_data)
 
-        if not identity:
-            return False
         deck_obj = Deck(deck_cards, identity, full_card_map)
         return deck_obj
 

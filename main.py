@@ -22,10 +22,12 @@ def read_deck():
 
     deck_data = request.form['deck_data']
     deck = deck_module.Deck.build_deck_from_text(deck_data, full_card_map)
+    """
     if not deck:
         return "Deck was invalid."
-    flaws = deck_reader.find_flaws(deck, full_card_map)
-    #flaws = []
+    """
+    #flaws = deck_reader.find_flaws(deck, full_card_map)
+    flaws = []
 
     # test
     import data

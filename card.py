@@ -121,7 +121,7 @@ class DetailedCard(Card):
             print "Failed to properly make card!"
             return False
         
-        self.actions, self.actions_with_draw = data.get_number_of_actions(self)
+        self.actions, self.actions_with_draw = data.get_card_actions(self)
 
 
 CARD_ID = 0
