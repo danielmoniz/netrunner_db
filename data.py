@@ -46,7 +46,12 @@ def get_list_of_attr(attr, deck, unique=False, convert_type=None):
     for card in deck:
         attr_value = getattr(card, attr)
         if convert_type:
-            attr_value = convert_type(attr_value)
+            try:
+                attr_value = convert_type(attr_value)
+            except ValueError as e:
+                if attr_value.lower() == 'x':
+                    continue
+                raise e
             if unique:
                 attr_list.append(attr_value)
             else:

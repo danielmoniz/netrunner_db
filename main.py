@@ -65,21 +65,17 @@ def read_deck():
     if deck.side.lower() == "corp":
         special_cards = data.get_cards_of_type("ice", deck)
         mandatory_subtypes = ['Barrier', 'Code Gate', 'Sentry']
-        special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
-        special_map = get_subtypes_map(special_types, special_cards)
         special_table_title = "Ice Analysis (basic)"
-
-        general_types = analyze.get_general_types()[deck.side.lower()]
-        general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
     else:
         special_cards = data.get_cards_of_subtype("icebreaker", deck)
         mandatory_subtypes = ['AI', 'Fracter', 'Decoder', 'Killer']
-        special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
-        special_map = get_subtypes_map(special_types, special_cards)
         special_table_title = "Icebreaker Analysis (basic)"
 
-        general_types = analyze.get_general_types()[deck.side.lower()]
-        general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
+    special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
+    special_map = get_subtypes_map(special_types, special_cards)
+
+    general_types = analyze.get_general_types()[deck.side.lower()]
+    general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
 
     analysis_blocks = []
     
