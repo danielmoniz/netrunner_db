@@ -107,47 +107,49 @@ def read_deck():
         "Resource": data.get_cards_of_type("resource", deck),
     }
 
+    def get_subtypes(cards, mandatory_subtypes):
+        card_subtypes = list(set(data.get_list_of_attr("subtype", ice)))
+        card_subtypes_set = set()
+        for card_subtypes_str in card_subtypes:
+            current_subtypes = data.parse_subtype(card_subtypes_str)
+            current_subtypes = [card_subtype.title() for card_subtype in current_subtypes]
+            card_subtypes_set.update(current_subtypes)
+        card_subtypes_set.difference_update(mandatory_subtypes)
+        card_subtypes = mandatory_subtypes + list(card_subtypes_set)
+        return card_subtypes
+
+    def get_subtypes_map(card_subtypes, cards):
+        card_subtypes_map = {}
+        for card_subtype in card_subtypes:
+            if card_subtype.lower() == 'all':
+                card_subtypes_map[card_subtype] = ice
+                continue
+            card_subtypes_map[card_subtype] = data.get_cards_of_subtype(card_subtype, cards)
+        return card_subtypes_map
+
     if deck.side.lower() == "corp":
         ice = data.get_cards_of_type("ice", deck)
-        ice_types = list(set(data.get_list_of_attr("subtype", ice)))
-        ice_types_set = set()
-        for ice_type_str in ice_types:
-            current_ice_types = data.parse_subtype(ice_type_str)
-            current_ice_types = [ice_type.title() for ice_type in current_ice_types]
-            ice_types_set.update(current_ice_types)
-        ice_types = ['All'] + list(ice_types_set)
-        ice_types_map = {}
-        for ice_type in ice_types:
-            ice_of_type = data.get_ice(deck)
-            if ice_type.lower() == 'all':
-                ice_types_map[ice_type] = ice
-                continue
-            ice_types_map[ice_type] = data.get_cards_of_subtype(ice_type, ice_of_type)
-    else:
-        icebreakers = data.get_cards_of_subtype("icebreaker", deck)
-        icebreaker_types = ["All"] + list(set(data.get_list_of_attr("subtype", icebreakers)))
-        icebreaker_types_map = {}
-        for icebreaker_type in icebreaker_types:
-            icebreakers = data.get_icebreakers(deck)
-            if icebreaker_type.lower() == 'all':
-                icebreaker_types_map[icebreaker_type] = icebreakers
-                continue
-            icebreaker_types_map[icebreaker_type] = data.get_cards_of_subtype(icebreaker_type, icebreakers)
+        mandatory_ice_types = ['Barrier', 'Code Gate', 'Sentry']
+        ice_types = ["All"] + get_subtypes(ice, mandatory_ice_types)
+        ice_types_map = get_subtypes_map(ice_types, ice)
 
-
-    analysis_blocks = []
-    
-    if deck.side.lower() == 'corp':
         general_types = general_corp_types
         general_map = general_corp_types_map
         special_types = ice_types
         special_map = ice_types_map
     else:
+        icebreakers = data.get_cards_of_subtype("icebreaker", deck)
+        mandatory_icebreaker_types = ['Fracter', 'Decoder', 'Killer']
+        icebreaker_types = ["All"] + get_subtypes(ice, mandatory_icebreaker_types)
+        icebreaker_types_map = get_subtypes_map(icebreaker_types, icebreakers)
+
         general_types = general_runner_types
         general_map = general_runner_types_map
         special_types = icebreaker_types
         special_map = icebreaker_types_map
 
+    analysis_blocks = []
+    
     general_analysis_block = []
     general_analysis_block.append([""] + analyze.get_general_analysis_ftn_names())
     for card_type in general_types:
