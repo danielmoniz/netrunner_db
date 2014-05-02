@@ -1,5 +1,16 @@
 import collections
 
+
+def get_subtypes(cards, mandatory_subtypes):
+    card_subtypes = list(set(get_list_of_attr("subtype", cards)))
+    card_subtypes_set = set()
+    for card_subtypes_str in card_subtypes:
+        current_subtypes = parse_subtype(card_subtypes_str)
+        card_subtypes_set.update(current_subtypes)
+    card_subtypes_set.difference_update(mandatory_subtypes)
+    card_subtypes = mandatory_subtypes + list(card_subtypes_set)
+    return card_subtypes
+
 def average_over_attr(attr, deck, average="mean", decimal_places=2, unique=False, convert_type=None):
     if average == "median":
         raise NotImplementedError
@@ -134,8 +145,10 @@ def get_cards_of_attr(attr, attr_value, deck, compare=None):
 def get_cards_of_type(card_type, deck):
     return get_cards_of_attr('type', card_type, deck)
 
-def parse_subtype(subtype_text):
-    subtypes = subtype_text.lower().split(' - ')
+def parse_subtype(subtype_text, lower=False):
+    if lower:
+        subtype_text = subtype_text.lower()
+    subtypes = subtype_text.split(' - ')
     return subtypes
 
 

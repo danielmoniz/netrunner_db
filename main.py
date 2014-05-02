@@ -45,28 +45,9 @@ def read_deck():
 
     import pprint
 
-    print '*'*10
-    # lambda comparison test
-    attr = 'memory'
-    attr_value = 1
-    test_cards = data.get_cards_of_attr(attr, attr_value, deck)
-    print '*'*10
-    if test_cards:
-        for card in test_cards:
-            print card, "{}: {}".format(attr, getattr(card, attr))
 
-    print '*'*10
-    test_cards = data.advanced_text_search(
-        all_cards,
-        exact_text=("at least", "advancement token"),
-        #mandatory_words=(,),
-    )
-    for card in test_cards:
-        print card
-
-
-    test_card = full_card_map["Hadrian's Wall"]
-    #pprint.pprint(test_card)
+    test_card = full_card_map["Crypsis"]
+    pprint.pprint(test_card)
 
     # ANALYSIS +++++++++++++++++++++++++++++++
 
@@ -107,22 +88,11 @@ def read_deck():
         "Resource": data.get_cards_of_type("resource", deck),
     }
 
-    def get_subtypes(cards, mandatory_subtypes):
-        card_subtypes = list(set(data.get_list_of_attr("subtype", ice)))
-        card_subtypes_set = set()
-        for card_subtypes_str in card_subtypes:
-            current_subtypes = data.parse_subtype(card_subtypes_str)
-            current_subtypes = [card_subtype.title() for card_subtype in current_subtypes]
-            card_subtypes_set.update(current_subtypes)
-        card_subtypes_set.difference_update(mandatory_subtypes)
-        card_subtypes = mandatory_subtypes + list(card_subtypes_set)
-        return card_subtypes
-
     def get_subtypes_map(card_subtypes, cards):
         card_subtypes_map = {}
         for card_subtype in card_subtypes:
             if card_subtype.lower() == 'all':
-                card_subtypes_map[card_subtype] = ice
+                card_subtypes_map[card_subtype] = cards
                 continue
             card_subtypes_map[card_subtype] = data.get_cards_of_subtype(card_subtype, cards)
         return card_subtypes_map
@@ -130,7 +100,7 @@ def read_deck():
     if deck.side.lower() == "corp":
         ice = data.get_cards_of_type("ice", deck)
         mandatory_ice_types = ['Barrier', 'Code Gate', 'Sentry']
-        ice_types = ["All"] + get_subtypes(ice, mandatory_ice_types)
+        ice_types = ["All"] + data.get_subtypes(ice, mandatory_ice_types)
         ice_types_map = get_subtypes_map(ice_types, ice)
 
         general_types = general_corp_types
@@ -139,8 +109,8 @@ def read_deck():
         special_map = ice_types_map
     else:
         icebreakers = data.get_cards_of_subtype("icebreaker", deck)
-        mandatory_icebreaker_types = ['Fracter', 'Decoder', 'Killer']
-        icebreaker_types = ["All"] + get_subtypes(ice, mandatory_icebreaker_types)
+        mandatory_icebreaker_types = ['AI', 'Fracter', 'Decoder', 'Killer']
+        icebreaker_types = ["All"] + data.get_subtypes(icebreakers, mandatory_icebreaker_types)
         icebreaker_types_map = get_subtypes_map(icebreaker_types, icebreakers)
 
         general_types = general_runner_types

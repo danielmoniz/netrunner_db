@@ -1,4 +1,9 @@
 <html>
+    <head>
+	<style>
+	    .table_header { font-weight:bold; }
+	</style>
+    </head>
     <div style="float:left;">
     {% if deck %}
 	<b>Side:</b> {{ side }}<br /><br />
@@ -38,10 +43,15 @@
 	{% for analysis_block in analysis %}
 	    <table class="analysis_block">
 	    {% for row in analysis_block %}
-		<tr>
+		{% if loop.first %}
+		<tr class="table_header">
+		{% endif %}
 		{% for item in row %}
-		    <td>{{ item }}</td>
+		    <td {% if loop.first %}class="table_header"{% endif %}>
+			    {{ item }}
+		    </td>
 		{% endfor %}
+		{% if loop.first %}</b>{% endif %}
 		</tr>
 	    {% endfor %}
 	    </table>

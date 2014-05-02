@@ -26,28 +26,30 @@ def get_ice_analysis_ftns():
     return ice_analysis_ftns
 
 def get_icebreaker_analysis_ftns():
-    ice_analysis_ftns = [
+    analysis_ftns = [
         total,
         total_cost,
         mean_strength,
         max_strength,
         cost_to_strength_ratio,
     ]
-    return ice_analysis_ftns
+    return analysis_ftns
 
 def get_ice_analysis_ftn_names():
-    ftn_names = [ftn.__name__.capitalize() for ftn in get_ice_analysis_ftns()]
+    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_ice_analysis_ftns()]
     return ftn_names
 
 def get_icebreaker_analysis_ftn_names():
-    ftn_names = [ftn.__name__.capitalize() for ftn in get_icebreaker_analysis_ftns()]
+    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_icebreaker_analysis_ftns()]
     return ftn_names
 
 def get_special_analysis_ftn_names(side):
     if side.lower() == 'corp':
         return get_ice_analysis_ftn_names()
-    elif side.lower == 'runner':
-        return get_icebreaker_analysis_ftns
+    elif side.lower() == 'runner':
+        return get_icebreaker_analysis_ftn_names()
+    else:
+        raise ValueError("'side' is not Runner or Corp!")
 
 def run_general_analyses(deck, side=None, name_of_analysis=""):
     analyses = []
