@@ -35,8 +35,21 @@
     </div>
     <div style="float:left; width:100%;">
 	<b>Stats:</b><br />
-	{% for stat in general_analysis %}
+	{#
+	{% for analysis_block in general_analysis %}
+	#}
+	    <table class="analysis_block">
+	    {% for row in general_analysis %}
+		<tr>
+		{% for item in row %}
+		    <td>{{ item }}</td>
+		{% endfor %}
+		</tr>
+	    {% endfor %}
+	    </table>
+	{#
 	{% endfor %}
+	#}
     </div>
 
 </html>

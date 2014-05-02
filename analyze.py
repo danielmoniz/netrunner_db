@@ -46,14 +46,13 @@ def run_analyses(deck, side=None, name_of_analysis=""):
     return analyses
 
 def total(cards):
-    return len(cards)
+    """Note that 'unique' is set to true for summing the 'quantity' attribute.
+    If it wasn't, cards would be double- and triple-counted.
+    """
+    return data.sum_over_attr('quantity', cards, unique=True, convert_type=int)
 
 def total_as_ratio(cards):
     return 'TBC'
-
-def total_cost(cards):
-    total_cost = data.sum_over_attr("cost", cards, int)
-    return total_cost
 
 def total_cost(cards):
     total_cost = data.sum_over_attr("cost", cards, convert_type=int)

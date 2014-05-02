@@ -98,13 +98,30 @@ def read_deck():
         "Upgrade",
     ]
 
+    general_runner_types = [
+        "All",
+        "Icebreaker",
+        "Program",
+        "Hardware",
+        "Resource",
+        "Event",
+    ]
+
     general_corp_types_map = {
-        "All": deck.cards,
+        "All": deck,
         "ICE": data.get_cards_of_type("ice", deck),
         "Asset": data.get_cards_of_type("asset", deck),
         "Agenda": data.get_cards_of_type("agenda", deck),
         "Operation": data.get_cards_of_type("operation", deck),
         "Upgrade": data.get_cards_of_type("upgrade", deck),
+    }
+    general_runner_types_map = {
+        "All": deck,
+        "Icebreaker": data.get_cards_of_subtype("icebreaker", deck),
+        "Program": data.get_cards_of_type("program", deck),
+        "Hardware": data.get_cards_of_type("hardware", deck),
+        "Event": data.get_cards_of_type("event", deck),
+        "Resource": data.get_cards_of_type("resource", deck),
     }
 
     if deck.side == "corp":
@@ -117,17 +134,24 @@ def read_deck():
 
     general_analysis_block = []
     #general_analysis_block.append(general_corp_types)
-    general_analysis_block.append(analyze.get_general_analysis_ftn_names())
-
-    for card_type in general_corp_types:
+    general_analysis_block.append([""] + analyze.get_general_analysis_ftn_names())
+    
+    if deck.side.lower() == 'corp':
+        general_types = general_corp_types
+        general_map = general_corp_types_map
+    else:
+        general_types = general_runner_types
+        general_map = general_runner_types_map
+    for card_type in general_types:
         column = []
         column.append(card_type)
-        analysis = analyze.run_analyses(general_corp_types_map[card_type])
+        cards = general_map[card_type]
+        analysis = analyze.run_analyses(cards)
         column.extend(analysis)
         general_analysis_block.append(column)
 
     special_analysis_block = []
-    special_analysis_block.append(analyze.get_ice_analysis_ftn_names)
+    special_analysis_block.append(analyze.get_ice_analysis_ftn_names())
     if deck.side == "corp":
         for ice_type in ice_types:
             analysis = analyze.run_analyses(general_corp_types_map[card_type])
@@ -137,7 +161,7 @@ def read_deck():
             analysis = analyze.run_analyses(general_runner_types_map[card_type])
             special_analysis_block.append(analysis)
 
-    print general_analysis_block
+    general_analysis_block = zip(*general_analysis_block)
     print special_analysis_block
 
     return render_template(

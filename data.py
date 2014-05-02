@@ -1,17 +1,24 @@
 import collections
 
-def average_over_attr(attr, deck, average="mean", unique=False, convert_type=None):
+def average_over_attr(attr, deck, average="mean", decimal_places=2, unique=False, convert_type=None):
     if average == "median":
         raise NotImplementedError
-    if not len(deck):
-        return "/"
     if not convert_type:
         convert_type = float
+    if average == "mean":
+        convert_type = float
+    if not len(deck):
+        return "/"
     attr_list = get_list_of_attr(attr, deck, unique=unique, convert_type=convert_type)
     if average == "mean":
-        return sum(attr_list) / len(deck)
+        mean = sum(attr_list) / total_cards_in_list(deck)
+        print sum(attr_list), total_cards_in_list(deck)
+        return round(mean, decimal_places)
     elif average == "mode":
         return collections.Counter.attr_list.most_common(1)
+
+def total_cards_in_list(cards):
+    return sum_over_attr('quantity', cards, unique=True, convert_type=int)
 
 def sum_over_attr(attr, deck, unique=False, convert_type=None):
     if not convert_type:
@@ -85,10 +92,14 @@ def get_cards_of_attr(attr, attr_value, deck, compare=None):
     """Note that the default comparison operator is equality.
     This should NOT be specified in a parameter if equality is desired.
     """
+    #print "Deck:", deck
+    print '*'*20
+    print "in get_cards_of_attr for attr:", attr
     attr_convert, compare = get_attr_conversion(compare)
     cards = []
     for card in deck:
         card_attr_value = getattr(card, attr).lower()
+        print card_attr_value
         if card_attr_value in ("", "-"):
             continue
         if card_attr_value.lower() == 'x':
