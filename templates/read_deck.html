@@ -2,6 +2,9 @@
     <head>
 	<style>
 	    .table_header { font-weight:bold; }
+	    .table_left_header { width:150px; }
+	    .table_top_header td { width:75px; }
+	    .table_title { font-size:32; }
 	</style>
     </head>
     <div style="float:left;">
@@ -42,19 +45,21 @@
 	<b>Stats:</b><br />
 	{% for analysis_block in analysis %}
 	    <table class="analysis_block">
-	    {% for row in analysis_block %}
+	    <caption class="table_title">{{ analysis_block.title }}</caption>
+	    {% for row in analysis_block.table %}
 		{% if loop.first %}
-		<tr class="table_header">
+		<tr class="table_header table_top_header">
 		{% endif %}
 		{% for item in row %}
-		    <td {% if loop.first %}class="table_header"{% endif %}>
-			    {{ item }}
+		    <td {% if loop.first %}
+			class="table_header table_left_header"{% endif %}>
+			{{ item }}
 		    </td>
 		{% endfor %}
 		{% if loop.first %}</b>{% endif %}
 		</tr>
 	    {% endfor %}
-	    </table>
+	    </table><br />
 	{% endfor %}
     </div>
 

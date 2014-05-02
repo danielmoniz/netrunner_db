@@ -67,6 +67,7 @@ def read_deck():
         mandatory_subtypes = ['Barrier', 'Code Gate', 'Sentry']
         special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
         special_map = get_subtypes_map(special_types, special_cards)
+        special_table_title = "Ice Analysis (basic)"
 
         general_types = analyze.get_general_types()[deck.side.lower()]
         general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
@@ -75,6 +76,7 @@ def read_deck():
         mandatory_subtypes = ['AI', 'Fracter', 'Decoder', 'Killer']
         special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
         special_map = get_subtypes_map(special_types, special_cards)
+        special_table_title = "Icebreaker Analysis (basic)"
 
         general_types = analyze.get_general_types()[deck.side.lower()]
         general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
@@ -107,11 +109,11 @@ def read_deck():
         column.extend(analysis)
         special_analysis_block.append(column)
 
-    analysis_blocks.append(general_analysis_block)
-    analysis_blocks.append(special_analysis_block)
+    analysis_blocks.append({'title': "General Analysis", 'table': general_analysis_block})
+    analysis_blocks.append({'title': special_table_title, 'table': special_analysis_block})
     for i in range(len(analysis_blocks)):
-        block = analysis_blocks[i]
-        analysis_blocks[i] = zip(*block)
+        block = analysis_blocks[i]['table']
+        analysis_blocks[i]['table'] = zip(*block)
 
     return render_template(
         'read_deck.html', 
