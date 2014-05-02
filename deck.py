@@ -67,6 +67,8 @@ class Deck(object):
             try:
                 valid_cards[card_name] += int(quantity)
             except KeyError:
+                valid_cards[card_name] = int(quantity)
+        for card_name, quantity in valid_cards.iteritems():
             full_card = full_card_map[card_name]
             if 'Noise' in card_name:
                 print full_card
