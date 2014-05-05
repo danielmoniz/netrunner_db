@@ -1,4 +1,5 @@
 import collections
+import re
 
 def sort_by_attr(attr, cards, convert_type=None, descending=True):
     if not convert_type:
@@ -68,6 +69,34 @@ def get_list_of_attr(attr, deck, unique=False, convert_type=None):
                     attr_list.append(attr_value)
     return attr_list
 
+def get_money_making_cards(cards, instant=False):
+    money_makers = advanced_text_search(
+        cards,
+        mandatory_words=["credit"],
+        partial_words=["gain", "take"],
+        same_sentence=True,
+    )
+    if instant:
+        corp_money_makers = get_cards_of_attr("type", "operation", money_makers)
+        runner_money_makers = get_cards_of_attr("type", "event", money_makers)
+        money_makers = corp_money_makers + runner_money_makers
+    return money_makers
+
+def get_income(card):
+    """Return income of card of text: "Gain X credit[s]."
+    Returns the first instance of this text found in the card's text.
+    NOTE: May not be instant. Eg. may be an asset, agenda, etc.
+    """
+    sentences = get_sentences_from_text(card.text)
+    card_matches = False
+    for sentence in sentences:
+        match = re.search('[Gg]ain (\d) \[Credit', card.text)
+        if match:
+            income_size = match.groups()[0]
+            return int(income_size)
+    return 0
+    
+
 def get_total_actions(deck):
     actions = 0
     actions_with_draw = 0
@@ -84,8 +113,15 @@ def get_card_actions(card, unique=True):
     subtypes = parse_subtype(card.subtype)
     if "double" in subtypes:
         actions += 1
+    """
     if "priority" in subtypes:
         actions -= 1
+    """
+    if is_instant(card):
+        match = re.search('[Gg]ain(( \[Click\])+)', card.text)
+        if match:
+            num_clicks = match.groups()[0].count('Click')
+            actions -= num_clicks
     if card.type.lower() == "agenda":
         actions += int(card.cost)
 
@@ -93,6 +129,9 @@ def get_card_actions(card, unique=True):
     if not unique:
         return actions * int(card.quantity), actions_with_draw * int(card.quantity)
     return actions, actions_with_draw
+
+def is_instant(card):
+    return card.type in ("Event", "Operation")
 
 def get_icebreakers(deck):
     return get_cards_of_subtype('icebreaker', deck)
@@ -194,26 +233,40 @@ def find_cards_with_all_words(text, deck):
     return cards
 
 
-def advanced_text_search(deck, exact_text=None, mandatory_words=None, partial_words=None):
+def advanced_text_search(deck, exact_text=None, mandatory_words=None, partial_words=None, same_sentence=False):
     if not exact_text and not mandatory_words and not partial_match_words:
         return deck
     cards = []
-    current_card_set = deck[:]
-    if exact_text:
-        for text in exact_text:
-            for card in current_card_set[:]:
-                if not exact_match_is_in_text(text, card.text):
-                    current_card_set.remove(card)
-    if mandatory_words:
-        for card in current_card_set[:]:
-            if not all_words_are_in_text(mandatory_words, card.text):
-                current_card_set.remove(card)
-    if partial_words:
-        for card in current_card_set[:]:
-            if not one_word_is_in_text(partial_words, card.text):
-                current_card_set.remove(card)
-    return current_card_set
+    valid_cards = []
+    for card in deck[:]:
+        if not same_sentence:
+            sentences = [card.text]
+        else:
+            sentences = get_sentences_from_text(card.text)
+        card_has_valid_sentence = False
+        for sentence in sentences:
+            sentence_valid_so_far = False
+            if exact_text:
+                for text in exact_text:
+                    if not exact_match_is_in_text(text, card.text):
+                        continue
+            if mandatory_words:
+                if not all_words_are_in_text(mandatory_words, card.text):
+                    continue
+            if partial_words:
+                if not one_word_is_in_text(partial_words, card.text):
+                    continue
+            # if we've made it this far, the sentence must be valid
+            card_has_valid_sentence = True
+            break
 
+        if card_has_valid_sentence:
+            valid_cards.append(card)
+    return valid_cards
+
+
+def get_sentences_from_text(text):
+    return text.split('.')
 
 
 def one_word_is_in_text(words, text):
