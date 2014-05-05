@@ -31,7 +31,7 @@ class Deck(object):
             self.side = identity_card["side"]
         else:
             if not cards:
-                return False
+                return None
             self.side = self.cards[0].side
 
         sum_list = [card.quantity for card in self.cards]
@@ -48,8 +48,11 @@ class Deck(object):
         return_str = ""
         if self.identity:
             return_str += "{}\n\n".format(self.identity)
-        for card in self.cards:
-            return_str += str(card) + "\n"
+        for subdeck_type, subdeck in self.cat_cards.iteritems():
+            return_str += "{} ({} total, {} unique)\n".format(subdeck_type, subdeck['total'], len(subdeck))
+            for card in subdeck['cards']:
+                return_str += str(card) + "\n"
+            return_str += "\n"
         print return_str
         return return_str
 
