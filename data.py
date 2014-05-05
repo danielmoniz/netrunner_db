@@ -1,5 +1,14 @@
 import collections
 
+def sort_by_attr(attr, cards, convert_type=None, descending=True):
+    if not convert_type:
+        convert_type = str
+    cards = cards[:]
+    print getattr(cards[0], attr)
+    sorted_cards = sorted(cards, key=lambda card: convert_type(getattr(card, attr)), reverse=descending)
+    print getattr(cards[0], attr)
+    return sorted_cards
+
 
 def get_subtypes(cards, mandatory_subtypes):
     card_subtypes = list(set(get_list_of_attr("subtype", cards)))
@@ -81,7 +90,6 @@ def get_card_actions(card, unique=True):
         actions += int(card.cost)
 
     actions_with_draw = actions + 1
-    print card.name, actions, actions_with_draw
     if not unique:
         return actions * int(card.quantity), actions_with_draw * int(card.quantity)
     return actions, actions_with_draw
