@@ -292,43 +292,26 @@ def find_cards_with_all_words(text, deck):
     return cards
 
 
-def advanced_text_search(deck, exact_text=None, mandatory_words=None, partial_words=None, same_sentence=False):
+def advanced_text_search(text, exact_text=None, mandatory_words=None, partial_words=None):
     if not exact_text and not mandatory_words and not partial_match_words:
-        return deck
-    cards = []
-    valid_cards = []
-    for card in deck[:]:
-        if not same_sentence:
-            sentences = [card.text]
-        else:
-            sentences = get_sentences_from_text(card.text)
-        card_has_valid_sentence = False
-        for sentence in sentences:
-            sentence_valid_so_far = False
-            if exact_text:
-                exact_text_matches = False
-                for text in exact_text:
-                    if card.name == "Komainu":
-                        print "Komainue test:", text
-                        print card.text
-                    if exact_match_is_in_text(text, sentence):
-                        exact_text_matches = True
-                        break
-                if not exact_text_matches:
-                    pass
-            if mandatory_words:
-                if not all_words_are_in_text(mandatory_words, sentence):
-                    continue
-            if partial_words:
-                if not one_word_is_in_text(partial_words, sentence):
-                    continue
-            # if we've made it this far, the sentence must be valid
-            card_has_valid_sentence = True
-            break
+        return True
+    if exact_text:
+        exact_text_matches = False
+        for temp_text in exact_text:
+            if exact_match_is_in_text(temp_text, text):
+                exact_text_matches = True
+                break
+        if not exact_text_matches:
+            return False
+    if mandatory_words:
+        if not all_words_are_in_text(mandatory_words, text):
+            return False
+    if partial_words:
+        if not one_word_is_in_text(partial_words, text):
+            return False
 
-        if card_has_valid_sentence:
-            valid_cards.append(card)
-    return valid_cards
+    # if we've made it this far, the text must be valid
+    return True
 
 
 def advanced_deck_search(deck, same_sentence=False, **kwargs):

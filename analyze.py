@@ -140,7 +140,7 @@ def total_net_cost_with_draw(cards, **kwargs):
 
 def number_of_ice_that_ends_runs(cards, **kwargs):
     ice = data.get_ice(cards)
-    end_run_ice = data.advanced_text_search(ice, exact_text=["end the run"])
+    end_run_ice = data.advanced_deck_search(ice, exact_text=["end the run"])
     print '*'*20
     for card in end_run_ice:
         print card.name
