@@ -65,7 +65,8 @@ class Deck(object):
             return_str += "\n"
         return_str += "\nShortlist ({})\n".format(len(self.shortlist))
         for card in self.shortlist:
-            return_str += str(card) + "\n"
+            return_str += unicode(card) + "\n"
+        return_str = unicode(return_str)
         print return_str
         return return_str
 
@@ -100,8 +101,7 @@ class Deck(object):
         deck_info = deck_text.split('\n')
         mode = None
         for line in deck_info:
-            line = line.lower()
-            print mode
+            line = str(bs4.BeautifulSoup(line)).lower()
             if "shortlist" in line or "short list" in line:
                 mode = "shortlist"
             card_info = cls.read_card_from_line(line, full_card_map_lower)

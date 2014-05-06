@@ -22,7 +22,7 @@ class DetailedCard(Card):
         # find a way to test for being iterable and not a dict
         if not isinstance(card, dict) and not isinstance(card, Card):
             self.card_id = card[CARD_ID]
-            self.name = card[NAME]
+            self.name = unicode(card[NAME])
             self.side = card[SIDE]
             self.identity = card[IDENTITY]
             self.type = card[TYPE]
@@ -55,7 +55,7 @@ class DetailedCard(Card):
                 print "CREATED REGULAR CARD USING LIST OR TUPLE"
         elif isinstance(card, dict):
             self.card_id = card["card_id"]
-            self.name = card["name"]
+            self.name = unicode(card["name"], "utf8")
             self.side = card["side"]
             self.identity = card["identity"]
             self.type = card["type"]
@@ -88,7 +88,7 @@ class DetailedCard(Card):
                 print "CREATED CARD USING DICT"
         elif isinstance(card, Card):
             self.card_id = card.card_id
-            self.name = card.name
+            self.name = unicode(card.name)
             self.side = card.side
             self.identity = card.identity
             self.type = card.type

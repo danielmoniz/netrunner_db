@@ -50,6 +50,7 @@ def get_ice_analysis_ftns():
         max_strength,
         mean_cost_to_strength_ratio,
         mean_cost_to_strength_ratio_without_duplicates,
+        number_of_ice_that_ends_runs,
     ]
     return ice_analysis_ftns
 
@@ -68,11 +69,11 @@ def get_icebreaker_analysis_ftns():
 # ANALYSIS FUNCTIONS
 
 def total(cards, **kwargs):
-    return data.total_cards_in_list(cards)
+    return data.get_total_cards(cards)
 
 def total_as_ratio(cards, **kwargs):
     deck = kwargs['full_deck']
-    set_total = data.total_cards_in_list(cards)
+    set_total = data.get_total_cards(cards)
     total = deck.total_cards
     ratio = float(set_total) / float(total)
     return get_percent_from_decimal(ratio)
@@ -136,6 +137,24 @@ def total_net_cost(cards, **kwargs):
 
 def total_net_cost_with_draw(cards, **kwargs):
     return data.sum_over_attr("net_cost_with_draw", cards, convert_type=int)
+
+def number_of_ice_that_ends_runs(cards, **kwargs):
+    ice = data.get_ice(cards)
+    end_run_ice = data.advanced_text_search(ice, exact_text=["end the run"])
+    print '*'*20
+    for card in end_run_ice:
+        print card.name
+    print '#'*20
+    return data.get_total_cards(end_run_ice)
+
+
+# ---------
+
+
+def get_run_events(cards, **kwargs):
+    events = data.get_cards_of_type('event', cards)
+    run_events = data.get_cards_of_subtype('run', events)
+    return data.total_cards(run_events)
     
 
 # ----------

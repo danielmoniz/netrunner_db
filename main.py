@@ -48,10 +48,19 @@ def read_deck():
     for card in advanced_results:
         print card.name
     """
-
+    
+    print "$"*20
+    cards = data.get_cards_of_attr("side", "corp", all_cards[:])
+    cards = data.get_cards_of_attr("actions", 0, cards, convert_type=int, compare=lambda x,y: x<=y)
+    for card in cards:
+        print card, card.actions
+    print len(cards)
+    print "$"*20
 
     test_card = full_card_map["Crypsis"]
-    #pprint.pprint(test_card)
+    # @TODO This causes a KeyError. Fix this!
+    #test_card = full_card_map["Unregistered S&W '35"]
+    pprint.pprint(test_card)
 
     # ANALYSIS +++++++++++++++++++++++++++++++
 
@@ -81,6 +90,17 @@ def read_deck():
 
     analysis_blocks = []
     
+    def build_analysis_block(ftn_names, column_names):
+        analysis_block = []
+        analysis_block.append([""] + ftn_names)
+        for column_name in column_names:
+            column = []
+            column.append(column_name)
+            cards = general_map[column_name]
+            analysis = analyze.run_general_analyses(cards, full_deck=deck)
+            column.extend(analysis)
+            analysis_block.append(column)
+
     general_analysis_block = []
     general_analysis_block.append([""] + analyze.get_general_analysis_ftn_names())
     for card_type in general_types:

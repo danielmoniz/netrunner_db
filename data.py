@@ -50,12 +50,12 @@ def average_over_attr(attr, deck, average="mean", decimal_places=2, unique=False
         return False
     attr_list = get_list_of_attr(attr, deck, unique=unique, convert_type=convert_type)
     if average == "mean":
-        mean = sum(attr_list) / total_cards_in_list(deck)
+        mean = sum(attr_list) / get_total_cards(deck)
         return round(mean, decimal_places)
     elif average == "mode":
         return collections.Counter.attr_list.most_common(1)
 
-def total_cards_in_list(cards):
+def get_total_cards(cards):
     """Note that 'unique' is set to true for summing the 'quantity' attribute.
     If it wasn't, cards would be double- and triple-counted.
     """
@@ -306,14 +306,21 @@ def advanced_text_search(deck, exact_text=None, mandatory_words=None, partial_wo
         for sentence in sentences:
             sentence_valid_so_far = False
             if exact_text:
+                exact_text_matches = False
                 for text in exact_text:
-                    if not exact_match_is_in_text(text, card.text):
-                        continue
+                    if card.name == "Komainu":
+                        print "Komainue test:", text
+                        print card.text
+                    if exact_match_is_in_text(text, sentence):
+                        exact_text_matches = True
+                        break
+                if not exact_text_matches:
+                    pass
             if mandatory_words:
-                if not all_words_are_in_text(mandatory_words, card.text):
+                if not all_words_are_in_text(mandatory_words, sentence):
                     continue
             if partial_words:
-                if not one_word_is_in_text(partial_words, card.text):
+                if not one_word_is_in_text(partial_words, sentence):
                     continue
             # if we've made it this far, the sentence must be valid
             card_has_valid_sentence = True
@@ -321,6 +328,21 @@ def advanced_text_search(deck, exact_text=None, mandatory_words=None, partial_wo
 
         if card_has_valid_sentence:
             valid_cards.append(card)
+    return valid_cards
+
+
+def advanced_deck_search(deck, same_sentence=False, **kwargs):
+    valid_cards = []
+    for card in deck:
+        if not same_sentence:
+            sentences = [card.text]
+        else:
+            sentences = get_sentences_from_text(card.text)
+        for sentence in sentences:
+            sentence_has_match = advanced_text_search(sentence, **kwargs)
+            if sentence_has_match:
+                valid_cards.append(card)
+                break
     return valid_cards
 
 
