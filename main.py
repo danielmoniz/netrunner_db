@@ -21,9 +21,10 @@ def read_deck():
         return render_template('read_deck.html')
     all_cards = deck_reader.get_all_cards()
     full_card_map = deck_reader.get_card_map_of_all_cards()
+    full_card_map_lower = deck_reader.get_card_map_of_all_cards(lower=True)
 
     deck_data = request.form['deck_data']
-    deck = deck_module.Deck.build_deck_from_text(deck_data, full_card_map)
+    deck = deck_module.Deck.build_deck_from_text(deck_data, full_card_map_lower)
     if not deck:
         return render_template('read_deck.html')
     """

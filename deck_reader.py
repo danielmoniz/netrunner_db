@@ -40,13 +40,13 @@ def get_all_cards():
     return cards
 
 
-def get_card_map_of_all_cards():
+def get_card_map_of_all_cards(lower=False):
     """Return a map of every Netrunner card in the database.
     Retrieve from redis cache if possible.
     """
     cards = get_all_cards()
 
-    cards_map = reformat_cards(cards)
+    cards_map = reformat_cards(cards, lower)
 
     # Add duplicate Indentity entries with short versions of names
     for card in cards:
@@ -54,6 +54,8 @@ def get_card_map_of_all_cards():
             if ':' not in card.name:
                 continue
             new_card_name = card.name[:card.name.index(':')]
+            if lower:
+                new_card_name = new_card_name.lower()
             new_card = card_module.DetailedCard(card)
             cards_map[new_card_name] = new_card.__dict__
 
@@ -102,7 +104,7 @@ def get_category_from_cat_deck(category, deck):
     return subdeck
 
 
-def reformat_cards(card_list):
+def reformat_cards(card_list, lower=False):
     """Change list of cards into a desirable data structure.
     """
     NETRUNNER_CARD_MAP = 'netrunner:cards:all:map'
@@ -115,6 +117,8 @@ def reformat_cards(card_list):
         card_dict = {}
         for card in card_list:
             card_name = str(bs4.BeautifulSoup(card.name))
+            if lower:
+                card_name = card_name.lower()
             card_dict[card_name] = card.__dict__
         redis_instance.set(NETRUNNER_CARD_MAP, json.dumps(card_dict))
     return card_dict
