@@ -1,3 +1,5 @@
+import pprint
+
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -47,61 +49,6 @@ def read_deck():
     """
 
 
-    new_cards = data.get_cards_of_attr("set", "Honor and Profit", all_cards)
-    new_cards_in_order = data.sort_by_attr('num', new_cards, convert_type=int, descending=False)
-    for card in new_cards_in_order:
-        pass
-        #print card, card.side, card.num
-
-    ice = data.get_ice(all_cards)
-    ice = data.sort_by_attr('strength', ice, convert_type=int)
-    for card in ice:
-        print card, card.cost, card.strength, card.loyalty
-
-    money_makers = data.get_money_making_cards(all_cards, instant=True)
-    #money_makers = data.get_cards_of_attr("identity", "Neutral", money_makers)
-    print "="*20
-    for card in money_makers:
-        print card
-    print "="*20
-    for card in money_makers:
-        print "{} - {}".format(card, card.type)
-        print card.text + "\n"
-    print len(money_makers)
-
-    for card in money_makers:
-        print "\n" + str(card)
-        income = data.get_income(card)
-        print card, income
-    print "="*20
-
-    import re
-    card_set = data.advanced_text_search(all_cards[:], mandatory_words=['gain', 'click'])
-    for card in card_set:
-        print card
-        print card.text + "\n"
-    print '*'*20
-    for card in card_set[:]:
-        match = re.search('[Gg]ain (\d) \[Credit', card.text)
-        match = re.search('[Gg]ain(( \[Click\])+)', card.text)
-        if not match:
-            card_set.remove(card)
-        else:
-            print card
-            print match.groups()[0].count('Click')
-            print card.text + "\n"
-    print len(card_set)
-    print '&'*20
-    card_set = data.get_cards_of_attr("side", "corp", card_set)
-    for card in card_set:
-        actions = data.get_card_actions(card)
-        print card, card.actions
-        if card.type == "Agenda":
-            print card.cost, card.agendapoints
-        print card.text + "\n"
-    print '%'*20
-
-    import pprint
     test_card = full_card_map["Crypsis"]
     #pprint.pprint(test_card)
 
@@ -163,6 +110,7 @@ def read_deck():
     return render_template(
         'read_deck.html', 
         deck=deck,
+        shuffled_deck=deck.shuffle,
         identity=deck.identity, 
         cards=deck.cards, 
         side=deck.side,
@@ -171,7 +119,6 @@ def read_deck():
         analysis=analysis_blocks,
         general_analysis=general_analysis_block,
         special_analysis=special_analysis_block,
-        #analysis=deck_analysis,
     )
 
 if __name__ == '__main__':

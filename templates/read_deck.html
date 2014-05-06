@@ -1,7 +1,7 @@
 <html>
     <head>
 	<style>
-	    .main { width:{% if resolution %}{{ resolution }}{% else %}1240{% endif %}px; }
+	    .main { width:{% if resolution %}{{ resolution }}{% else %}1600{% endif %}px; }
 	    div.column { padding: 10px 15px 10px 15px; float:left; }
 	    div.full_column { width:100%; }
 	    .table_header { font-weight:bold; }
@@ -27,6 +27,23 @@
 	<b>{{ deck.total_cards }} total, {{ deck.total_unique_cards }}
 	unique</b><br /><br />
     {% endif %}
+
+    <h3>Shortlist</h3>
+    {% for card in deck.shortlist %}
+	{{ card.name }} ({{ card.type }})<br />
+    {% endfor %}
+    </div>
+    <div class="column">
+	{% for card in shuffled_deck %}
+	    {% if loop.index == 1 %}
+		<b>Opening hand:<br /></b>
+	    {% endif %}
+	    {% if loop.index == 6 %}
+		------------------<br />
+		{#<b>Rest of deck:</b><br />#}
+	    {% endif %}
+	    {{ card.name|safe }} (cost {{ card.cost }})<br />
+	{% endfor %}
     </div>
     {#
     <div class="column" style="float:right;">

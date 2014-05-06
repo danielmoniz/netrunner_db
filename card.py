@@ -124,6 +124,8 @@ class DetailedCard(Card):
             return False
         
         self.actions, self.actions_with_draw = data.get_card_actions(self)
+        self.income = data.get_income(self)
+        self.net_cost, self.net_cost_with_draw = data.get_net_cost(self)
 
 
 CARD_ID = 0

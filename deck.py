@@ -1,3 +1,4 @@
+import random
 import re
 import xml.etree.ElementTree as ET
 
@@ -9,7 +10,9 @@ import data
 
 class Deck(object):
 
-    def __init__(self, cards, identity = None, full_card_map=None):
+    def __init__(self, cards, identity = None, full_card_map=None, shortlist=None):
+        if not shortlist:
+            shortlist = []
         self.identity = identity
         self.card_map = full_card_map
         if not full_card_map:
@@ -21,6 +24,10 @@ class Deck(object):
             detailed_card = card_module.DetailedCard(self.card_map[card_name])
             detailed_card.quantity = card['qty']
             self.cards.append(detailed_card)
+        self.shortlist = []
+        for card_name in shortlist:
+            detailed_card = card_module.DetailedCard(self.card_map[card_name])
+            self.shortlist.append(detailed_card)
 
         self.cat_cards = self.categorize_cards()
 
@@ -37,6 +44,8 @@ class Deck(object):
         sum_list = [card.quantity for card in self.cards]
         self.total_cards = sum(sum_list)
         self.total_unique_cards = len(self.cards)
+
+        #self.shuffle = self._shuffle()
 
     def __iter__(self):
         return iter(self.cards)
@@ -59,6 +68,19 @@ class Deck(object):
     def __len__(self):
         return len(self.cards)
 
+    @property
+    def shuffle(self):
+        card_list = []
+        for card in self:
+            try:
+                quantity = card.quantity
+            except AttributeError:
+                quantity = 1
+            for i in range(quantity):
+                card_list.append(card)
+        random.shuffle(card_list)
+        return card_list
+
     @classmethod
     def build_deck_from_text(cls, deck_text, full_card_map):
         """Parse a text file for cards that make up a deck.
@@ -69,22 +91,26 @@ class Deck(object):
         """
         valid_cards = {}
         deck_cards = []
+        shortlist = []
         identity = None
         deck_info = deck_text.split('\n')
+        mode = None
         for line in deck_info:
+            if "shortlist" in line or "short list" in line:
+                mode = "shortlist"
             card_info = cls.read_card_from_line(line, full_card_map)
             if not card_info:
                 continue
             card_name, quantity = card_info
-            try:
-                valid_cards[card_name] += int(quantity)
-            except KeyError:
-                valid_cards[card_name] = int(quantity)
+            if mode == "shortlist":
+                shortlist.append(card_name)
+            else:
+                try:
+                    valid_cards[card_name] += int(quantity)
+                except KeyError:
+                    valid_cards[card_name] = int(quantity)
         for card_name, quantity in valid_cards.iteritems():
             full_card = full_card_map[card_name]
-            if 'Noise' in card_name:
-                print full_card
-                print '%'*10
             card_name = full_card['name'] # replace name w/ official name
             card_type = full_card['type']
 
@@ -101,7 +127,7 @@ class Deck(object):
             }
             deck_cards.append(card_data)
 
-        deck_obj = Deck(deck_cards, identity, full_card_map)
+        deck_obj = Deck(deck_cards, identity, full_card_map, shortlist=shortlist)
         return deck_obj
 
     def categorize_cards(self):

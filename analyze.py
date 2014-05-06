@@ -35,6 +35,9 @@ def get_general_analysis_ftns():
         max_cost,
         total_actions,
         total_actions_with_draw,
+        total_net_cost,
+        total_net_cost_with_draw,
+        turns_to_play,
     ]
     return general_analysis_ftns
 
@@ -106,7 +109,6 @@ def mean_cost_to_strength_ratio(cards, **kwargs):
         return '/'
     ratio = float(mean_cost) / float(mean_strength)
     return round(ratio, 2)
-    #return get_percent_from_decimal(ratio)
 
 def mean_cost_to_strength_ratio_without_duplicates(cards, **kwargs):
     mean_cost = data.average_over_attr("cost", cards, unique=True)
@@ -115,7 +117,6 @@ def mean_cost_to_strength_ratio_without_duplicates(cards, **kwargs):
         return '/'
     ratio = float(mean_cost) / float(mean_strength)
     return round(ratio, 2)
-    #return get_percent_from_decimal(ratio)
 
 def total_cost_without_duplicates(cards, **kwargs):
     total_cost = data.sum_over_attr("cost", cards, convert_type=int, unique=True)
@@ -126,6 +127,16 @@ def total_actions(cards, **kwargs):
 
 def total_actions_with_draw(cards, **kwargs):
     return data.get_total_actions(cards)[1]
+
+def turns_to_play(cards, **kwargs):
+    return (float(data.get_total_actions(cards)[1]) - 5)/ 4.0
+
+def total_net_cost(cards, **kwargs):
+    return data.sum_over_attr("net_cost", cards, convert_type=int)
+
+def total_net_cost_with_draw(cards, **kwargs):
+    return data.sum_over_attr("net_cost_with_draw", cards, convert_type=int)
+    
 
 # ----------
 

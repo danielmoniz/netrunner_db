@@ -1,14 +1,32 @@
 import collections
 import re
 
-def sort_by_attr(attr, cards, convert_type=None, descending=True):
+def sort_by_attr(attr, cards, convert_type=None, descending=True, secondary_attr=None):
     if not convert_type:
         convert_type = str
     cards = cards[:]
-    print getattr(cards[0], attr)
+    cards = get_cards_with_attr(attr, cards, data_format=int)
+    if secondary_attr:
+        sorted_cards = sorted(cards, key=lambda card: (convert_type(getattr(card, attr)), 
+            getattr(card, secondary_attr)), reverse=descending)
+        return sorted_cards
     sorted_cards = sorted(cards, key=lambda card: convert_type(getattr(card, attr)), reverse=descending)
-    print getattr(cards[0], attr)
     return sorted_cards
+
+
+def get_cards_with_attr(attr, cards, data_format):
+    """Return a subset of cards that have a valid attribute of the given 
+    data format.
+    """
+    valid_cards = []
+    for card in cards:
+        card_attr_value = getattr(card, attr)
+        try:
+            converted_attr = data_format(card_attr_value)
+        except ValueError:
+            continue
+        valid_cards.append(card)
+    return valid_cards
 
 
 def get_subtypes(cards, mandatory_subtypes):
@@ -77,9 +95,7 @@ def get_money_making_cards(cards, instant=False):
         same_sentence=True,
     )
     if instant:
-        corp_money_makers = get_cards_of_attr("type", "operation", money_makers)
-        runner_money_makers = get_cards_of_attr("type", "event", money_makers)
-        money_makers = corp_money_makers + runner_money_makers
+        money_makers = get_cards_of_attr_in("type", ("operation", "event"), money_makers)
     return money_makers
 
 def get_income(card):
@@ -87,14 +103,30 @@ def get_income(card):
     Returns the first instance of this text found in the card's text.
     NOTE: May not be instant. Eg. may be an asset, agenda, etc.
     """
+    if hasattr(card, 'actions'):
+        actions = card.actions
+    else:
+        actions = get_card_actions(card)
     sentences = get_sentences_from_text(card.text)
     card_matches = False
     for sentence in sentences:
-        match = re.search('[Gg]ain (\d) \[Credit', card.text)
+        match = re.search('[Gg]ain ((\d)+) \[Credit', card.text)
         if match:
             income_size = match.groups()[0]
             return int(income_size)
     return 0
+
+def get_net_cost(card):
+    """Assume card has 'actions' and 'income' attributes.
+    Also assume that 1 Click = 1 Credit.
+    """
+    if card.cost == "X":
+        return ("X", "X+1")
+    if card.cost == "":
+        return ("", "")
+    net_cost = int(card.cost) + card.actions - card.income
+    net_cost_with_draw = net_cost + 1
+    return net_cost, net_cost_with_draw
     
 
 def get_total_actions(deck):
@@ -108,9 +140,9 @@ def get_total_actions(deck):
 
 def get_card_actions(card, unique=True):
     if card.type.lower() == 'identity':
-        return (0, 0)
+        return ("", "")
     actions = 1 # one action to play card
-    subtypes = parse_subtype(card.subtype)
+    subtypes = parse_subtype(card.subtype, lower=True)
     if "double" in subtypes:
         actions += 1
     """
@@ -124,6 +156,10 @@ def get_card_actions(card, unique=True):
             actions -= num_clicks
     if card.type.lower() == "agenda":
         actions += int(card.cost)
+    if 'run' in subtypes:
+        if ("instead of accessing cards" not in card.text.lower()
+            and "you cannot access any cards" not in card.text.lower()):
+            actions -= 1
 
     actions_with_draw = actions + 1
     if not unique:
@@ -164,22 +200,45 @@ def get_attr_conversion(comparison_operator):
         attr_convert = float
     return attr_convert, comparison_operator
 
-def get_cards_of_attr(attr, attr_value, deck, compare=None):
+def get_cards_of_attr_in(attr, attr_value, deck):
+    cards = get_cards_of_attr(attr, attr_value, deck, compare=lambda x, y: x in y, convert_type=unicode)
+    return cards
+
+def get_cards_of_attr(attr, attr_value, deck, compare=None, convert_type=None):
     """Note that the default comparison operator is equality.
     This should NOT be specified in a parameter if equality is desired.
     """
-    attr_convert, compare = get_attr_conversion(compare)
+    new_convert_type, new_compare = get_attr_conversion(compare)
+    if not convert_type:
+        convert_type = new_convert_type
+    if not compare:
+        compare = new_compare
     cards = []
     for card in deck:
-        card_attr_value = getattr(card, attr).lower()
+        try:
+            card_attr_value = getattr(card, attr)
+        except AttributeError:
+            print 'attribute error'
+            continue
+        if isinstance(card_attr_value, basestring):
+            card_attr_value = card_attr_value.lower()
         if card_attr_value in ("", "-"):
             continue
-        if card_attr_value.lower() == 'x':
+        if card_attr_value == 'x':
             cards.append(card)
             continue
         try:
-            card_attr_value = attr_convert(card_attr_value)
-            attr_value = attr_convert(attr_value)
+            attr_value = convert_type(attr_value)
+        except ValueError:
+            print "Value to match cannot be properly converted."
+            raise e
+        try:
+            card_attr_value = convert_type(card_attr_value)
+        except TypeError:
+            print 'type error: skipping'
+            print card_attr_value, type(card_attr_value)
+            print attr_value, type(attr_value)
+            continue
         except ValueError as e:
             print "VALUE ERROR"
             print card, repr(attr_value), repr(card_attr_value)
@@ -317,3 +376,7 @@ def count_subtypes(deck):
     subtype_count = [(key, value) for key, value in subtypes_in_deck.iteritems()]
     subtype_count.sort(key=lambda tup: tup[1], reverse=True)
     return subtype_count
+
+def shuffle_deck(deck):
+    import random
+    return random.shuffle(deck[:])
