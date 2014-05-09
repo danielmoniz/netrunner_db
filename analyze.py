@@ -38,6 +38,7 @@ def get_general_analysis_ftns():
         total_net_cost,
         total_net_cost_with_draw,
         turns_to_play,
+        total_out_of_faction_influence,
     ]
     return general_analysis_ftns
 
@@ -48,6 +49,7 @@ def get_ice_analysis_ftns():
         total_cost_without_duplicates,
         mean_strength,
         max_strength,
+        mean_cost,
         mean_cost_to_strength_ratio,
         mean_cost_to_strength_ratio_without_duplicates,
         number_of_ice_that_ends_runs,
@@ -141,12 +143,13 @@ def total_net_cost_with_draw(cards, **kwargs):
 def number_of_ice_that_ends_runs(cards, **kwargs):
     ice = data.get_ice(cards)
     end_run_ice = data.advanced_deck_search(ice, exact_text=["end the run"])
-    print '*'*20
-    for card in end_run_ice:
-        print card.name
-    print '#'*20
     return data.get_total_cards(end_run_ice)
 
+def total_out_of_faction_influence(cards, identity=None, **kwargs):
+    if not identity:
+        raise ValueError
+    out_of_faction_cards = data.get_cards_of_attr_not_in("identity", identity, cards)
+    return data.sum_over_attr("loyalty", out_of_faction_cards, convert_type=int)
 
 # ---------
 

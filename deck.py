@@ -34,9 +34,8 @@ class Deck(object):
 
         if identity:
             identity_card = self.card_map[identity.lower()]
-
-        if identity:
             self.side = identity_card["side"]
+            self.faction = identity_card['identity']
         else:
             if not cards:
                 return None

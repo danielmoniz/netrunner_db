@@ -79,6 +79,10 @@ def get_list_of_attr(attr, deck, unique=False, convert_type=None):
             except ValueError as e:
                 if attr_value.lower() == 'x':
                     continue
+                # @TODO Check this - can we continue in all cases?
+                else:
+                    print "Attribute failed to convert:", attr, attr_value
+                    continue
                 raise e
             if unique:
                 attr_list.append(attr_value)
@@ -202,6 +206,10 @@ def get_attr_conversion(comparison_operator):
 
 def get_cards_of_attr_in(attr, attr_value, deck):
     cards = get_cards_of_attr(attr, attr_value, deck, compare=lambda x, y: x in y, convert_type=unicode)
+    return cards
+
+def get_cards_of_attr_not_in(attr, attr_value, deck):
+    cards = get_cards_of_attr(attr, attr_value, deck, compare=lambda x, y: x not in y, convert_type=unicode)
     return cards
 
 def get_cards_of_attr(attr, attr_value, deck, compare=None, convert_type=None):

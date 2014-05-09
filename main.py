@@ -57,6 +57,27 @@ def read_deck():
     print len(cards)
     print "$"*20
 
+    print "$"*20
+    cards = data.advanced_deck_search(all_cards[:], exact_text=["only if you made a successful"])
+    #cards = data.get_cards_of_attr("actions", 0, cards, convert_type=int, compare=lambda x,y: x<=y)
+    for card in cards:
+        print card
+    print len(cards)
+    print "$"*20
+
+    card_set = data.get_ice(all_cards[:])
+    card_set = data.get_cards_of_attr('cost', 2, card_set, convert_type=int, compare=lambda x,y:x<=y)
+    card_set = data.advanced_deck_search(card_set, exact_text=["end the run"])
+    #card_set = data.get_cards_of_subtype("sentry", card_set)
+    for card in card_set:
+        print card, card.cost, card.strength, card.identity, card.loyalty
+        print card.subtype
+        print card.text
+        print ""
+    print "\n" + str(len(card_set))
+    print "*"*20
+
+
     test_card = full_card_map["Crypsis"]
     # @TODO This causes a KeyError. Fix this!
     #test_card = full_card_map["Unregistered S&W '35"]
@@ -107,7 +128,7 @@ def read_deck():
         column = []
         column.append(card_type)
         cards = general_map[card_type]
-        analysis = analyze.run_general_analyses(cards, full_deck=deck)
+        analysis = analyze.run_general_analyses(cards, full_deck=deck, identity=deck.faction)
         column.extend(analysis)
         general_analysis_block.append(column)
 
