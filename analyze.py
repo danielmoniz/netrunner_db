@@ -1,4 +1,5 @@
 import data
+import re
 
 def run_analysis_ftns(analysis_ftns, cards, **kwargs):
     analyses = []
@@ -25,36 +26,192 @@ def run_special_analyses(cards, side, **kwargs):
     #analysis_ftns = get_general_analysis_ftns()
     return run_analysis_ftns(analysis_ftns, cards, **kwargs)
 
-def get_general_analysis_ftns():
-    general_analysis_ftns = [
-        total,
-        total_as_ratio,
-        total_cost,
-        total_cost_without_duplicates,
-        mean_cost,
-        max_cost,
-        total_actions,
-        total_actions_with_draw,
-        total_net_cost,
-        total_net_cost_with_draw,
-        turns_to_play,
-        total_out_of_faction_influence,
-    ]
-    return general_analysis_ftns
 
-def get_ice_analysis_ftns():
-    ice_analysis_ftns = [
-        total,
-        total_cost,
-        total_cost_without_duplicates,
-        mean_strength,
-        max_strength,
-        mean_cost,
-        mean_cost_to_strength_ratio,
-        mean_cost_to_strength_ratio_without_duplicates,
-        number_of_ice_that_ends_runs,
+def get_analysis_ftn_blocks(side, cards):
+    if side.lower() == 'corp':
+        return get_corp_analysis_ftn_blocks(cards)
+    elif side.lower() == 'runner':
+        return get_runner_analysis_ftn_blocks(cards)
+    else:
+        raise ValueError("side variable is not 'corp' or 'runner'.")
+
+
+def get_corp_general_column_names():
+    return [
+        "All",
+        "ICE",
+        "Asset",
+        "Agenda",
+        "Operation",
+        "Upgrade",
     ]
-    return ice_analysis_ftns
+
+def get_runner_general_column_names():
+    return [
+        "All",
+        #"Icebreaker",
+        "Program",
+        "Hardware",
+        "Resource",
+        "Event",
+    ]
+
+def get_mandatory_ice_column_names():
+    return [
+        'Barrier',
+        'Code Gate',
+        'Sentry',
+    ]
+
+def get_mandatory_icebreaker_column_names():
+    return [
+        'Fracter',
+        'Decoder',
+        'Killer',
+        'AI',
+    ]
+
+
+def get_ice_subtype_columns(cards):
+    mandatory_subtypes = get_mandatory_ice_column_names()
+    return ["All"] + data.get_subtypes(cards, mandatory_subtypes)
+
+def get_icebreaker_subtype_columns(cards):
+    mandatory_subtypes = get_mandatory_icebreaker_column_names()
+    subtypes = ["All"] + data.get_subtypes(cards, mandatory_subtypes)
+    subtypes.remove('Icebreaker')
+    return subtypes
+
+def get_corp_analysis_ftn_blocks(cards):
+    analysis_ftn_blocks = [
+        {'title': 'Deck constraints', 
+            'analysis_ftns':
+            [
+                total,
+                total_out_of_faction_influence,
+                turns_to_play,
+            ],
+            'column_names': get_corp_general_column_names(),
+            'column_map_ftn': data.get_cards_of_type,
+        },
+
+        {'title': 'General Analysis', 
+            'analysis_ftns':
+            [
+                total_as_ratio,
+                total_cost,
+                total_cost_without_duplicates,
+                mean_cost,
+                max_cost,
+                total_actions,
+                total_actions_with_draw,
+                total_net_cost,
+                total_net_cost_with_draw,
+            ],
+            'column_names': get_corp_general_column_names(),
+            'column_map_ftn': data.get_cards_of_type,
+        },
+
+        {'title': 'Ice Analysis (general)', 
+            'analysis_ftns':
+            [
+                total,
+                total_cost,
+                total_cost_without_duplicates,
+                mean_strength,
+                max_strength,
+                mean_cost,
+                mean_cost_to_strength_ratio,
+                mean_cost_to_strength_ratio_without_duplicates,
+                number_of_ice_that_ends_runs,
+            ],
+            'column_names': get_ice_subtype_columns(data.get_ice(cards)),
+            'column_map_ftn': data.get_cards_of_subtype,
+            'card_subset': data.get_ice(cards),
+        },
+    ]
+    return analysis_ftn_blocks
+
+def get_runner_analysis_ftn_blocks(cards):
+    analysis_ftn_blocks = [
+        {'title': 'Deck constraints', 
+            'analysis_ftns':
+            [
+                total,
+                total_out_of_faction_influence,
+                turns_to_play,
+            ],
+            'column_names': get_runner_general_column_names(),
+            'column_map_ftn': data.get_cards_of_type,
+        },
+
+        {'title': 'General Analysis', 
+            'analysis_ftns':
+            [
+                total_as_ratio,
+                total_cost,
+                total_cost_without_duplicates,
+                mean_cost,
+                max_cost,
+                total_actions,
+                total_actions_with_draw,
+                total_net_cost,
+                total_net_cost_with_draw,
+            ],
+            'column_names': get_runner_general_column_names(),
+            'column_map_ftn': data.get_cards_of_type,
+        },
+
+        {'title': 'Icebreaker Analysis (general)', 
+            'analysis_ftns':
+            [
+                total,
+                total_cost,
+                total_cost_without_duplicates,
+                mean_strength,
+                max_strength,
+                mean_cost_to_strength_ratio,
+                mean_cost_to_strength_ratio_without_duplicates,
+            ],
+            'column_names': get_icebreaker_subtype_columns(data.get_icebreakers(cards)),
+            'column_map_ftn': data.get_cards_of_subtype,
+            'card_subset': data.get_icebreakers(cards),
+        },
+
+        {'title': 'Program Analysis (general)', 
+            'analysis_ftns':
+            [
+                total_memory_units,
+                total_memory_units_without_duplicates,
+                total_generated_memory,
+            ],
+            'column_names': ['All', 'Icebreaker',],
+            'column_map_ftn': data.get_cards_of_subtype,
+            'card_subset': data.get_cards_of_type("program", cards),
+        },
+
+        {'title': "Memory Analysis", 
+            'analysis_ftns':
+            [
+                total_generated_memory,
+                total,
+                deck_memory,
+            ],
+            'column_names': get_memory_column_names(cards),
+            'column_map_ftn': data.get_cards_of_name,
+            'card_subset': data.get_memory_added_cards(cards),
+        },
+
+    ]
+    
+    return analysis_ftn_blocks
+def get_memory_column_names(cards):
+        memory_cards = data.get_cards_of_attr("memory_added", 1, cards, convert_type=int, compare=lambda x,y:x>=y)
+        column_names = data.get_list_of_attr("name", memory_cards, unique=True)
+        return ['All'] + column_names
+
+def deck_memory(cards, **kwargs):
+    return data.get_generated_memory_from_deck(cards)
 
 def get_icebreaker_analysis_ftns():
     analysis_ftns = [
@@ -69,6 +226,23 @@ def get_icebreaker_analysis_ftns():
     return analysis_ftns
 
 # ANALYSIS FUNCTIONS
+
+def total_generated_memory(cards, **kwargs):
+    total_memory = 0
+    for card in cards:
+        memory_added = data.get_generated_memory(card)
+        total_memory += int(memory_added)
+    return total_memory
+
+def total_memory_units(cards, **kwargs):
+    total = data.sum_over_attr("memory", cards, convert_type=int)
+    return total
+
+
+def total_memory_units_without_duplicates(cards, **kwargs):
+    total = data.sum_over_attr("memory", cards, convert_type=int, unique=True)
+    return total
+
 
 def total(cards, **kwargs):
     return data.get_total_cards(cards)
@@ -103,7 +277,9 @@ def mean_strength(cards, **kwargs):
 
 def max_strength(cards, **kwargs):
     strengths = data.get_list_of_attr("strength", cards, convert_type=int)
-    return max(strengths)
+    if strengths:
+        return max(strengths)
+    return '/'
 
 def mean_cost_to_strength_ratio(cards, **kwargs):
     mean_cost = data.average_over_attr("cost", cards)
@@ -213,6 +389,10 @@ def get_general_types_maps(cards):
         'corp': general_corp_types_map, 
         'runner': general_runner_types_map
     }
+
+def get_names_from_functions(ftns):
+    ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in ftns]
+    return ftn_names
 
 def get_general_analysis_ftn_names():
     general_analysis_ftn_names = [ftn.__name__.capitalize().replace('_', ' ') for ftn in get_general_analysis_ftns()]

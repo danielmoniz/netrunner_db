@@ -29,7 +29,9 @@ def get_cards_with_attr(attr, cards, data_format):
     return valid_cards
 
 
-def get_subtypes(cards, mandatory_subtypes):
+def get_subtypes(cards, mandatory_subtypes=None):
+    if not mandatory_subtypes:
+        mandatory_subtypes = []
     card_subtypes = list(set(get_list_of_attr("subtype", cards)))
     card_subtypes_set = set()
     for card_subtypes_str in card_subtypes:
@@ -131,7 +133,37 @@ def get_net_cost(card):
     net_cost = int(card.cost) + card.actions - card.income
     net_cost_with_draw = net_cost + 1
     return net_cost, net_cost_with_draw
+
+
+#def get_programs_that_add_memory(
+def get_cards_of_name(name, cards):
+    return get_cards_of_attr("name", name, cards)
     
+
+def get_generated_memory(card):
+    match = re.search('\+(\d) \[Memory Unit', card.text)
+    if match:
+        memory_added = match.groups()[0]
+        return int(memory_added)
+    return 0
+
+def get_generated_memory_from_deck(cards):
+    total = 4
+    consoles = get_cards_of_subtype("console", cards)
+    weakest_consoles = sort_by_attr("memory_added", consoles)[1:]
+    for card in cards:
+        if card in weakest_consoles:
+            continue
+        total += int(card.memory_added)
+    return total
+
+def get_memory_added_cards(cards):
+    memory_cards = []
+    for card in cards:
+        if card.memory_added > 0:
+            memory_cards.append(card)
+    return memory_cards
+
 
 def get_total_actions(deck):
     actions = 0

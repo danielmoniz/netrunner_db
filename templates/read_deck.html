@@ -29,11 +29,14 @@
     {% endif %}
 
     <h3>Shortlist</h3>
-    {% for card in deck.shortlist %}
-	{{ card.name }} ({{ card.type }})<br />
-    {% endfor %}
+    {% if deck %}
+	{% for card in deck.shortlist %}
+	    {{ card.name }} ({{ card.type }})<br />
+	{% endfor %}
+    {% endif %}
     </div>
     <div class="column">
+    {% if shuffled_deck %}
 	{% for card in shuffled_deck %}
 	    {% if loop.index == 1 %}
 		<b>Opening hand:<br /></b>
@@ -44,6 +47,7 @@
 	    {% endif %}
 	    {{ card.name|safe }} (cost {{ card.cost }})<br />
 	{% endfor %}
+    {% endif %}
     </div>
     {#
     <div class="column" style="float:right;">

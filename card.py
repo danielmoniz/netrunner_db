@@ -126,6 +126,13 @@ class DetailedCard(Card):
         self.actions, self.actions_with_draw = data.get_card_actions(self)
         self.income = data.get_income(self)
         self.net_cost, self.net_cost_with_draw = data.get_net_cost(self)
+        if self.name == 'Blackguard':
+            print '*'*20
+            print self.name
+            print data.get_generated_memory(self)
+            print '*'*20
+        self.memory_added = data.get_generated_memory(self)
+
 
 
 CARD_ID = 0

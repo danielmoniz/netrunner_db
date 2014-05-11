@@ -78,7 +78,7 @@ def read_deck():
     print "*"*20
 
 
-    test_card = full_card_map["Crypsis"]
+    test_card = full_card_map["Blackguard"]
     # @TODO This causes a KeyError. Fix this!
     #test_card = full_card_map["Unregistered S&W '35"]
     pprint.pprint(test_card)
@@ -94,60 +94,62 @@ def read_deck():
             card_subtypes_map[card_subtype] = data.get_cards_of_subtype(card_subtype, cards)
         return card_subtypes_map
 
-    if deck.side.lower() == "corp":
-        special_cards = data.get_cards_of_type("ice", deck)
-        mandatory_subtypes = ['Barrier', 'Code Gate', 'Sentry']
-        special_table_title = "Ice Analysis (basic)"
-    else:
-        special_cards = data.get_cards_of_subtype("icebreaker", deck)
-        mandatory_subtypes = ['AI', 'Fracter', 'Decoder', 'Killer']
-        special_table_title = "Icebreaker Analysis (basic)"
-
-    special_types = ["All"] + data.get_subtypes(special_cards, mandatory_subtypes)
-    special_map = get_subtypes_map(special_types, special_cards)
-
-    general_types = analyze.get_general_types()[deck.side.lower()]
-    general_map = analyze.get_general_types_maps(deck)[deck.side.lower()]
-
-    analysis_blocks = []
-    
-    def build_analysis_block(ftn_names, column_names):
-        analysis_block = []
-        analysis_block.append([""] + ftn_names)
+    def build_analysis_block(ftn_block, analysis_ftns, card_set_map_ftn, column_names, deck):
+        table = []
+        ftn_names = analyze.get_names_from_functions(analysis_ftns)
+        card_subset = deck[:]
+        if 'card_subset' in ftn_block:
+            card_subset = ftn_block['card_subset']
+        table.append([""] + ftn_names)
         for column_name in column_names:
             column = []
             column.append(column_name)
-            cards = general_map[column_name]
-            analysis = analyze.run_general_analyses(cards, full_deck=deck)
+            if column_name.lower() == 'all':
+                cards = card_subset
+            else:
+                cards = card_set_map_ftn(column_name, card_subset)
+            analysis = analyze.run_analysis_ftns(
+                analysis_ftns,
+                cards, 
+                full_deck=deck, 
+                identity=deck.faction
+            )
             column.extend(analysis)
-            analysis_block.append(column)
+            table.append(column)
+        print '*'*20
+        print card_subset
+        ftn_block['table'] = table
+        print ftn_block['title']
+        print '*'*20
+        return ftn_block
 
-    general_analysis_block = []
-    general_analysis_block.append([""] + analyze.get_general_analysis_ftn_names())
-    for card_type in general_types:
-        column = []
-        column.append(card_type)
-        cards = general_map[card_type]
-        analysis = analyze.run_general_analyses(cards, full_deck=deck, identity=deck.faction)
-        column.extend(analysis)
-        general_analysis_block.append(column)
 
-    special_analysis_block = []
-    special_analysis_block.append([""] + analyze.get_special_analysis_ftn_names(deck.side))
-    print "Special types:", special_types
-    for special_type in special_types:
-        column = []
-        column.append(special_type)
-        cards = special_map[special_type]
-        analysis = analyze.run_special_analyses(cards, deck.side, full_deck=deck)
-        column.extend(analysis)
-        special_analysis_block.append(column)
-
-    analysis_blocks.append({'title': "General Analysis", 'table': general_analysis_block})
-    analysis_blocks.append({'title': special_table_title, 'table': special_analysis_block})
+    def build_analysis_blocks(deck):
+        analysis_blocks = []
+        analysis_ftn_blocks = analyze.get_analysis_ftn_blocks(deck.side, deck)
+        for ftn_block in analysis_ftn_blocks:
+            title = ftn_block['title']
+            ftn_list = ftn_block['analysis_ftns']
+            column_names = ftn_block['column_names']
+            card_set_map_ftn = ftn_block['column_map_ftn']
+            analysis_block = build_analysis_block(ftn_block, ftn_list, card_set_map_ftn, column_names, deck)
+            analysis_blocks.append(analysis_block)
+        return analysis_blocks
+            
+    analysis_blocks = build_analysis_blocks(deck)
     for i in range(len(analysis_blocks)):
         block = analysis_blocks[i]['table']
         analysis_blocks[i]['table'] = zip(*block)
+
+    cards = all_cards[:]
+    cards = data.get_cards_of_attr('rating', '4', cards)
+    cards = data.get_cards_of_attr_in('identity', ('Criminal', 'Neutral'), cards)
+    cards = data.get_cards_of_attr('side', 'runner', cards)
+    print '%'*20
+    for card in cards:
+        print card
+    print '#'*20
+
 
     return render_template(
         'read_deck.html', 
@@ -159,9 +161,8 @@ def read_deck():
         cat_cards=deck.cat_cards, 
         flaws=flaws,
         analysis=analysis_blocks,
-        general_analysis=general_analysis_block,
-        special_analysis=special_analysis_block,
     )
+
 
 if __name__ == '__main__':
     app.run(debug=True)
