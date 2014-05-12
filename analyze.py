@@ -308,7 +308,7 @@ def total_actions_with_draw(cards, **kwargs):
     return data.get_total_actions(cards)[1]
 
 def turns_to_play(cards, **kwargs):
-    return (float(data.get_total_actions(cards)[1]) - 5)/ 4.0
+    return (float(data.get_total_actions(cards)[1]))/ 4.0
 
 def total_net_cost(cards, **kwargs):
     return data.sum_over_attr("net_cost", cards, convert_type=int)

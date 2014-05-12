@@ -60,7 +60,7 @@ class Deck(object):
         for subdeck_type, subdeck in self.cat_cards.iteritems():
             return_str += "{} ({} total, {} unique)\n".format(subdeck_type, subdeck['total'], len(subdeck))
             for card in subdeck['cards']:
-                return_str += str(card) + "\n"
+                return_str += unicode(card) + "\n"
             return_str += "\n"
         return_str += "\nShortlist ({})\n".format(len(self.shortlist))
         for card in self.shortlist:
