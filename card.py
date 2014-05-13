@@ -20,6 +20,7 @@ class Card(object):
 class DetailedCard(Card):
     def __init__(self, card):
         # find a way to test for being iterable and not a dict
+
         if not isinstance(card, dict) and not isinstance(card, Card):
             self.card_id = card[CARD_ID]
             self.name = unicode(card[NAME])
@@ -53,6 +54,7 @@ class DetailedCard(Card):
             self.numcomments = card[NUMCOMMENTS]
             if card[TYPE] == "identity":
                 print "CREATED REGULAR CARD USING LIST OR TUPLE"
+
         elif isinstance(card, dict):
             self.card_id = card["card_id"]
             self.name = unicode(card["name"], "utf8")
@@ -86,6 +88,7 @@ class DetailedCard(Card):
             self.numcomments = card["numcomments"]
             if card['type'] == "identity":
                 print "CREATED CARD USING DICT"
+
         elif isinstance(card, Card):
             self.card_id = card.card_id
             self.name = unicode(card.name)
@@ -119,6 +122,7 @@ class DetailedCard(Card):
             self.numcomments = card.numcomments
             if card.type == "identity":
                 print "CREATED NEW CARD BASED ON OLD CARD"
+
         else:
             print "Failed to properly make card!"
             return False
@@ -132,6 +136,7 @@ class DetailedCard(Card):
             print data.get_generated_memory(self)
             print '*'*20
         self.memory_added = data.get_generated_memory(self)
+        self.quantity = 1
 
 
 

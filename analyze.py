@@ -1,5 +1,6 @@
 import data
 import re
+import card as card_module
 
 def run_analysis_ftns(analysis_ftns, cards, **kwargs):
     analyses = []
@@ -89,7 +90,7 @@ def get_corp_analysis_ftn_blocks(cards):
             [
                 total,
                 total_out_of_faction_influence,
-                turns_to_play,
+                agenda_points,
             ],
             'column_names': get_corp_general_column_names(),
             'column_map_ftn': data.get_cards_of_type,
@@ -98,6 +99,7 @@ def get_corp_analysis_ftn_blocks(cards):
         {'title': 'General Analysis', 
             'analysis_ftns':
             [
+                total,
                 total_as_ratio,
                 total_cost,
                 total_cost_without_duplicates,
@@ -107,6 +109,7 @@ def get_corp_analysis_ftn_blocks(cards):
                 total_actions_with_draw,
                 total_net_cost,
                 total_net_cost_with_draw,
+                turns_to_play,
             ],
             'column_names': get_corp_general_column_names(),
             'column_map_ftn': data.get_cards_of_type,
@@ -129,6 +132,19 @@ def get_corp_analysis_ftn_blocks(cards):
             'column_map_ftn': data.get_cards_of_subtype,
             'card_subset': data.get_ice(cards),
         },
+
+        {'title': 'Agenda Analysis', 
+            'analysis_ftns':
+            [
+                agenda_points,
+                minimum_turns_to_win,
+                average_agendas_scored_to_win,
+            ],
+            'column_names': ['All'],
+            #'column_names': get_corp_general_column_names(),
+            'column_map_ftn': data.get_cards_of_type,
+        },
+
     ]
     return analysis_ftn_blocks
 
@@ -205,6 +221,8 @@ def get_runner_analysis_ftn_blocks(cards):
     ]
     
     return analysis_ftn_blocks
+
+
 def get_memory_column_names(cards):
         memory_cards = data.get_cards_of_attr("memory_added", 1, cards, convert_type=int, compare=lambda x,y:x>=y)
         column_names = data.get_list_of_attr("name", memory_cards, unique=True)
@@ -321,11 +339,54 @@ def number_of_ice_that_ends_runs(cards, **kwargs):
     end_run_ice = data.advanced_deck_search(ice, exact_text=["end the run"])
     return data.get_total_cards(end_run_ice)
 
-def total_out_of_faction_influence(cards, identity=None, **kwargs):
-    if not identity:
+def total_out_of_faction_influence(cards, faction=None, **kwargs):
+    if not faction:
         raise ValueError
-    out_of_faction_cards = data.get_cards_of_attr_not_in("identity", identity, cards)
+    out_of_faction_cards = data.get_cards_of_attr_not_in("identity", faction, cards)
     return data.sum_over_attr("loyalty", out_of_faction_cards, convert_type=int)
+
+
+def agenda_points(cards, **kwargs):
+    num_agenda_points = data.sum_over_attr('agendapoints', cards, convert_type=int)
+    if num_agenda_points == 0:
+        return '/'
+    return num_agenda_points
+
+def average_agendas_scored_to_win(cards, identity=None, **kwargs):
+    points_to_win = 7
+    if identity.name == "Harmony Medtech: Biomedical Pioneer":
+        points_to_win = 6
+    agendas = data.get_cards_of_type('agenda', cards)
+    num_agendas = data.get_total_cards(agendas)
+    total_agenda_points = data.sum_over_attr('agendapoints', agendas, convert_type=int)
+    points_per_agenda = float(total_agenda_points) / float(num_agendas) 
+    num_scored_to_win = float(points_to_win) / points_per_agenda
+    if int(num_scored_to_win) == num_scored_to_win:
+        return int(num_scored_to_win)
+    return num_scored_to_win
+
+def minimum_turns_to_win(cards, identity=None, **kwargs):
+    points_to_win = 7
+    if identity.name == "Harmony Medtech: Biomedical Pioneer":
+        points_to_win = 6
+    agendas = data.get_cards_of_type('agenda', cards)
+    agendas = data.get_agendas_to_fastest_win(agendas, identity, points_to_win)
+    turns_to_play = data.sum_over_attr("actions", agendas, convert_type=int)
+
+    total_cost = data.sum_over_attr('cost', agendas, convert_type=int)
+    start_credits = 5
+    clicks_per_turn = 3
+    # for now, assume player must use actions to take credits
+    turns_for_credits = max(0, total_cost - 5)
+    print '^'*20
+    for card in agendas:
+        print card.name, card.cost, card.agendapoints
+    print '^'*20
+
+    clicks_to_play = turns_to_play + turns_for_credits
+    turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
+    return turns_to_play
+    #return turns_to_play, turns_for_credits
 
 # ---------
 

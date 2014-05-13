@@ -8,6 +8,7 @@ import deck as deck_module
 import deck_reader
 import analyze
 import netrunner_constants as constants
+import card as card_module
 
 app = Flask(__name__)
 
@@ -112,15 +113,12 @@ def read_deck():
                 analysis_ftns,
                 cards, 
                 full_deck=deck, 
-                identity=deck.faction
+                faction=deck.faction,
+                identity=deck.identity,
             )
             column.extend(analysis)
             table.append(column)
-        print '*'*20
-        print card_subset
         ftn_block['table'] = table
-        print ftn_block['title']
-        print '*'*20
         return ftn_block
 
 
@@ -140,15 +138,6 @@ def read_deck():
     for i in range(len(analysis_blocks)):
         block = analysis_blocks[i]['table']
         analysis_blocks[i]['table'] = zip(*block)
-
-    cards = all_cards[:]
-    cards = data.get_cards_of_attr('rating', '4', cards)
-    cards = data.get_cards_of_attr_in('identity', ('Criminal', 'Neutral'), cards)
-    cards = data.get_cards_of_attr('side', 'runner', cards)
-    print '%'*20
-    for card in cards:
-        print card
-    print '#'*20
 
 
     return render_template(

@@ -1,6 +1,8 @@
 import collections
 import re
 
+import card as card_module
+
 def sort_by_attr(attr, cards, convert_type=None, descending=True, secondary_attr=None):
     if not convert_type:
         convert_type = str
@@ -78,6 +80,8 @@ def get_list_of_attr(attr, deck, unique=False, convert_type=None):
         if convert_type:
             try:
                 attr_value = convert_type(attr_value)
+            except TypeError:
+                continue
             except ValueError as e:
                 if attr_value.lower() == 'x':
                     continue
@@ -425,3 +429,34 @@ def count_subtypes(deck):
 def shuffle_deck(deck):
     import random
     return random.shuffle(deck[:])
+
+
+def get_agendas_to_fastest_win(agendas, identity=None, points_to_win=7):
+    """Performs a naive optimization algorithm to return the best agendas to 
+    score for a lower bound on the turns required for winning the game.
+    """
+    points_left = points_to_win
+    agendas = sorted(agendas, key=lambda card: float(card.net_cost) / float(card.agendapoints))
+    agendas_left = []
+    for card in agendas:
+        for i in range(card.quantity):
+            new_card = card_module.DetailedCard(card)
+            agendas_left.append(new_card)
+    best_agendas = []
+    for card in agendas_left:
+        if int(card.agendapoints) <= points_left:
+            best_agendas.append(card)
+            points_left -= int(card.agendapoints)
+            agendas_left.remove(card)
+    if points_left > 0:
+    #if data.sum_over_attr("agendapoints", best_agendas) < points_to_win:
+        agendas_left = filter(lambda card: card.agendapoints >= points_left, agendas_left)
+        agendas_left = sorted(agendas_left, key=lambda card: float(card.cost))
+        best_agendas.append(agendas_left[0])
+
+    """
+    return_list = [card.name for card in best_agendas]
+    return ', '.join(return_list)
+    """
+    return best_agendas
+

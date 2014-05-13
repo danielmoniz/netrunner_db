@@ -15,7 +15,7 @@
     {% if deck %}
 	<b>Side:</b> {{ side }}<br /><br />
 	<b>Identity:</b><br />
-	{{ identity }}<br /><br />
+	{{ deck.identity.name }}<br /><br />
     {% endif %}
     {% if cat_cards %}
 	{% for type, subdeck in cat_cards.iteritems() %}
@@ -83,8 +83,7 @@
     <div class="column full_column">
 	<h2>Submit a deck</h2>
 	<form action="/read_deck" method="POST">
-	    <textarea name="deck_data" rows="30" cols="80">{{ deck }}
-	    </textarea>
+	    <textarea name="deck_data" rows="30" cols="80">{{ deck }}</textarea>
 	    <br />
 	    <input type='submit' />
 	</form>
