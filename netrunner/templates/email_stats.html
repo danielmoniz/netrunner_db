@@ -1,0 +1,62 @@
+<html>
+    <div class="main">
+    {#
+    <div class="column">
+    {% if flaws %}
+	<b>Flaws:</b>
+	{% for flaw in flaws %}
+	    {{ flaw }}
+	{% endfor %}
+    {% endif %}
+    </div>
+    #}
+    <div class="column">
+	<h2>Analysis</h2>
+	{% for analysis_block in analysis %}
+	    <table class="analysis_block" cellpadding="6">
+	    <caption class="table_title">{{ analysis_block.title }}</caption>
+	    {% for row in analysis_block.table %}
+		{% if loop.first %}
+		<tr style="font-weight:bold;">
+		{% else %}
+		<tr>
+		{% endif %}
+		{% for item in row %}
+		    <td {% if loop.first %} style="font-weight:bold;"{% endif %}>
+			{{ item }}
+		    </td>
+		{% endfor %}
+		</tr>
+	    {% endfor %}
+	    </table><br />
+	{% endfor %}
+    </div>
+    <hr />
+    <div class="column">
+    <h2>Decklist</h2>
+    {% if deck %}
+	<b>Side:</b> {{ side }}<br /><br />
+	<b>Identity:</b><br />
+	{{ deck.identity.name }}<br /><br />
+    {% endif %}
+    {% if cat_cards %}
+	{% for type, subdeck in cat_cards.iteritems() %}
+	    <b>{{ type }} ({{ subdeck.total }} total, {{ subdeck.cards|length }} unique):</b><br />
+	    {% for card in subdeck['cards'] %}
+		{{ card.name }} x{{ card.quantity }}<br />
+	    {% endfor %}<br />
+	{% endfor %}
+	<b>{{ deck.total_cards }} total, {{ deck.total_unique_cards }}
+	unique</b><br /><br />
+    {% endif %}
+
+    <h3>Shortlist</h3>
+    {% if deck %}
+	{% for card in deck.shortlist %}
+	    {{ card.name }} ({{ card.type }})<br />
+	{% endfor %}
+    {% endif %}
+    </div>
+    </div>
+
+</html>

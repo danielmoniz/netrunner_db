@@ -30,10 +30,6 @@ def get_all_cards():
         for card in cards:
             real_card = card_module.DetailedCard(card)
             real_cards.append(real_card)
-            if "Unregistered" in real_card.name:
-                print real_card.name
-            if 'Maker' in real_card.name:
-                print real_card.name
 
         cards = clean_card_data(real_cards)
         json_dump_list = []
