@@ -9,6 +9,8 @@ import data
 import deck_reader
 import deck as deck_module
 
+base_subject = "Deck analysis"
+
 def read_mail():
 # get all cards for reference
 # read deck
@@ -19,37 +21,39 @@ def read_mail():
     full_card_map_lower = deck_reader.get_card_map_of_all_cards(lower=True)
 
     gmail = gmail_module.login(email_config.email, email_config.password)
-    print gmail.logged_in
     unread = gmail.inbox().mail(unread=True, prefetch=True)
-    #print unread
-    #print unread[0].body
     print len(unread), "new messages"
     for email in unread:
-        print email.fr
         match = re.search(r"<([A-Za-z0-9_!@#$%^&*.]+)>", email.fr)
-        print match.group(1)
-        if match.group(1) not in email_config.valid_senders:
+        if match and match.group(1) not in email_config.valid_senders:
+            print "Sender:", match.group(1)
             print "Not a valid sender. Skipping."
             continue
+        if base_subject in email.subject:
+            print "Found an analysis email. Skipping."
+            continue
 
+        if 'deck' not in email.subject.lower() or 'netrunner' not in email.subject.lower():
+            print "No word 'deck' in subject line. Skipping."
+            continue
         deck_data = email.body
         print deck_data
         deck = deck_module.Deck.build_deck_from_text(deck_data, full_card_map_lower)
-        print '*'*20
-        #print deck
-        print '*'*20
-        if deck:
-            pass
-            # email back sender
+        if not deck:
+            "Deck is empty. Skipping."
+            continue
+        if not deck.cards:
+            print "Deck has no cards. Skipping."
+            continue
 
 
 
         #flaws = deck_reader.find_flaws(deck, full_card_map)
         flaws = []
 
-        print '%'*20
+        print '&'*20
         print deck
-        print '%'*20
+        print '&'*20
         analysis_blocks = analysis.build_analysis_blocks(deck)
 
         from jinja2 import Environment, PackageLoader
@@ -71,7 +75,7 @@ def read_mail():
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Deck analysis - {}".format(email.subject)
+        msg['Subject'] = "{} - {}".format(base_subject, email.subject)
         msg['From'] = email_config.email
         msg['To'] = email.fr
         text = "---Deck analysis for submitted deck---"
@@ -94,9 +98,8 @@ def read_mail():
         """
         server.sendmail(email_config.email, email.fr, msg.as_string())
         server.quit()
-        #email.read()
+        email.read()
 
         #print html
-        exit()
 
 read_mail()

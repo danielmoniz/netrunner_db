@@ -20,7 +20,7 @@ def get_all_cards():
     if redis_cards:
         cards = json.loads(redis_cards)
     else:
-        connection = sqlite3.connect("cards.db")
+        connection = sqlite3.connect("/Users/daniel.moniz/dev/projects/personal/netrunner_database/cards.db")
         c = connection.cursor()
         query = c.execute("SELECT * FROM netrunner")
         cards = query.fetchall()
