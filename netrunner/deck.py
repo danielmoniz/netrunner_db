@@ -100,7 +100,7 @@ class Deck(object):
         deck_info = deck_text.split('\n')
         mode = None
         for line in deck_info:
-            line = str(bs4.BeautifulSoup(line)).lower()
+            line = unicode(bs4.BeautifulSoup(line)).lower()
             if "shortlist" in line or "short list" in line:
                 mode = "shortlist"
             card_info = cls.read_card_from_line(line, full_card_map_lower)
@@ -160,7 +160,7 @@ class Deck(object):
     @classmethod
     def read_card_from_line(cls, line, full_card_map_lower):
         quantity = 1
-        line = str(bs4.BeautifulSoup(line)).lower()
+        line = unicode(bs4.BeautifulSoup(line)).lower()
         match = re.search(' x\d', line)
         if match:
             quantity = int(line[match.start() + 2:match.end()])

@@ -12,18 +12,24 @@ import deck as deck_module
 base_subject = "Deck analysis"
 
 def read_mail():
-# get all cards for reference
-# read deck
-# analyze deck
-# return analysis information
+    # get all cards for reference
+    # read deck
+    # analyze deck
+    # return analysis information
     all_cards = deck_reader.get_all_cards()
     full_card_map = deck_reader.get_card_map_of_all_cards()
     full_card_map_lower = deck_reader.get_card_map_of_all_cards(lower=True)
 
     gmail = gmail_module.login(email_config.email, email_config.password)
-    unread = gmail.inbox().mail(unread=True, prefetch=True)
+    unread = gmail.inbox().mail(unread=True)
     print len(unread), "new messages"
     for email in unread:
+        try:
+            email.fetch()
+        except UnicodeDecodeError as e:
+            print "Bad encoding in email. Skipping."
+            print e
+            continue
         match = re.search(r"<([A-Za-z0-9_!@#$%^&*.]+)>", email.fr)
         if match and match.group(1) not in email_config.valid_senders:
             print "Sender:", match.group(1)

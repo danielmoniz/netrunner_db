@@ -80,7 +80,8 @@ def get_ice_subtype_columns(cards):
 def get_icebreaker_subtype_columns(cards):
     mandatory_subtypes = get_mandatory_icebreaker_column_names()
     subtypes = ["All"] + data.get_subtypes(cards, mandatory_subtypes)
-    subtypes.remove('Icebreaker')
+    if 'Icebreaker' in subtypes:
+        subtypes.remove('Icebreaker')
     return subtypes
 
 def get_corp_analysis_ftn_blocks(cards):
