@@ -137,17 +137,53 @@ def get_corp_analysis_ftn_blocks(cards):
         {'title': 'Agenda Analysis', 
             'analysis_ftns':
             [
+                total,
                 agenda_points,
                 minimum_turns_to_win,
                 average_agendas_scored_to_win,
+                average_actions_to_score_winning_agendas,
             ],
-            'column_names': ['All'],
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_cards_of_type('agenda', cards), unique=True),
             #'column_names': get_corp_general_column_names(),
-            'column_map_ftn': data.get_cards_of_type,
+            'column_map_ftn': data.get_cards_of_name,
+            'card_subset': data.get_cards_of_type('agenda', cards),
+        },
+
+        {'title': 'Income Analysis', 
+            'analysis_ftns':
+            [
+                total,
+                total_net_income_from_instant_cards,
+                average_net_income_from_instant_cards,
+                draw_rate_of_income_cards,
+            ],
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(cards, instant=True), unique=True),
+            #'column_names': get_corp_general_column_names(),
+            'column_map_ftn': data.get_cards_of_name,
+            'card_subset': data.get_money_making_cards(cards, instant=True),
         },
 
     ]
     return analysis_ftn_blocks
+
+def draw_rate_of_income_cards(cards, full_deck=None, **kwargs):
+    num_cards = data.get_total_cards(full_deck)
+    income_cards = data.get_money_making_cards(cards)
+    num_income_cards = data.get_total_cards(income_cards)
+    ratio = num_income_cards / float(num_cards)
+    return get_percent_from_decimal(ratio)
+
+
+def average_net_income_from_instant_cards(cards, **kwargs):
+    cards = data.get_money_making_cards(cards)
+    total_income = data.get_net_income_from_cards(cards, instant=True)
+    num_income_cards = data.get_total_cards(cards)
+    return round(float(total_income) / num_income_cards, 2)
+
+def total_net_income_from_instant_cards(cards, **kwargs):
+    cards = data.get_money_making_cards(cards)
+    total_income = data.get_net_income_from_cards(cards, instant=True)
+    return total_income
 
 def get_runner_analysis_ftn_blocks(cards):
     analysis_ftn_blocks = [
@@ -364,7 +400,7 @@ def average_agendas_scored_to_win(cards, identity=None, **kwargs):
     num_scored_to_win = float(points_to_win) / points_per_agenda
     if int(num_scored_to_win) == num_scored_to_win:
         return int(num_scored_to_win)
-    return num_scored_to_win
+    return round(num_scored_to_win, 2)
 
 def minimum_turns_to_win(cards, identity=None, **kwargs):
     points_to_win = 7
@@ -372,6 +408,8 @@ def minimum_turns_to_win(cards, identity=None, **kwargs):
         points_to_win = 6
     agendas = data.get_cards_of_type('agenda', cards)
     agendas = data.get_agendas_to_fastest_win(agendas, identity, points_to_win)
+    if not agendas:
+        return '/'
     turns_to_play = data.sum_over_attr("actions", agendas, convert_type=int)
 
     total_cost = data.sum_over_attr('cost', agendas, convert_type=int)
@@ -388,6 +426,21 @@ def minimum_turns_to_win(cards, identity=None, **kwargs):
     turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
     return turns_to_play
     #return turns_to_play, turns_for_credits
+
+def average_actions_to_score_winning_agendas(cards, identity=None, **kwargs):
+    points_to_win = 7
+    if identity.name == "Harmony Medtech: Biomedical Pioneer":
+        points_to_win = 6
+    agendas = data.get_cards_of_type('agenda', cards)
+    num_agendas = data.get_total_cards(agendas)
+    total_actions = data.sum_over_attr('actions', agendas, convert_type=int)
+    total_points = data.sum_over_attr('agendapoints', agendas, convert_type=int)
+    ratio = points_to_win / float(total_points)
+    #actions_per_agenda = float(total_actions) / num_agendas
+    average_actions_to_score = float(total_actions) * ratio
+    if average_actions_to_score == int(average_actions_to_score):
+        return int(average_actions_to_score)
+    return average_actions_to_score
 
 # ---------
 

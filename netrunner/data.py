@@ -98,7 +98,7 @@ def get_list_of_attr(attr, deck, unique=False, convert_type=None):
     return attr_list
 
 def get_money_making_cards(cards, instant=False):
-    money_makers = advanced_text_search(
+    money_makers = advanced_deck_search(
         cards,
         mandatory_words=["credit"],
         partial_words=["gain", "take"],
@@ -107,6 +107,18 @@ def get_money_making_cards(cards, instant=False):
     if instant:
         money_makers = get_cards_of_attr_in("type", ("operation", "event"), money_makers)
     return money_makers
+
+def get_net_income_from_cards(cards, instant=False):
+    """The 'instant' parameter determines whether only instants should be 
+    counted.
+    """
+    total_income = 0
+    for card in cards:
+        if instant and not is_instant(card):
+            continue
+        if card.income:
+            total_income += card.net_income * card.quantity
+    return total_income
 
 def get_income(card):
     """Return income of card of text: "Gain X credit[s]."
@@ -125,6 +137,15 @@ def get_income(card):
             income_size = match.groups()[0]
             return int(income_size)
     return 0
+
+def get_net_income(card):
+    income = get_income(card)
+    cost = card.cost
+    try:
+        income -= int(card.cost)
+    except ValueError:
+        pass
+    return income
 
 def get_net_cost(card):
     """Assume card has 'actions' and 'income' attributes.
@@ -208,6 +229,9 @@ def get_card_actions(card, unique=True):
 
 def is_instant(card):
     return card.type in ("Event", "Operation")
+
+def get_instants(cards):
+    return [card for card in filter([is_instant, cards])]
 
 def get_icebreakers(deck):
     return get_cards_of_subtype('icebreaker', deck)
@@ -436,6 +460,9 @@ def get_agendas_to_fastest_win(agendas, identity=None, points_to_win=7):
     score for a lower bound on the turns required for winning the game.
     """
     points_left = points_to_win
+    total_agendas_points = sum_over_attr('agendapoints', agendas, convert_type=int)
+    if total_agendas_points < points_to_win:
+        return []
     agendas = sorted(agendas, key=lambda card: float(card.net_cost) / float(card.agendapoints))
     agendas_left = []
     for card in agendas:

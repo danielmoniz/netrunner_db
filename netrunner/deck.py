@@ -6,6 +6,7 @@ import bs4
 
 import card as card_module
 import data
+import deck_reader
 
 class Deck(object):
 
@@ -14,6 +15,10 @@ class Deck(object):
             shortlist = []
         self.identity = identity
         self.card_map = full_card_map_lower
+        print 'W'*20
+        print self.card_map['celebrity gift']['income']
+        print self.card_map['celebrity gift']['net_income']
+        print 'W'*20
         if not full_card_map_lower:
             self.card_map = deck_reader.get_card_map_of_all_cards()
 
@@ -46,6 +51,12 @@ class Deck(object):
         self.total_unique_cards = len(self.cards)
 
         #self.shuffle = self._shuffle()
+        #self.cards = deck_reader.update_cards(cards)
+        print '$'*20
+        for card in self.cards:
+            print card.name, card.income, card.net_income
+        print '$'*20
+
 
     def __iter__(self):
         return iter(self.cards)
@@ -62,7 +73,8 @@ class Deck(object):
             for card in subdeck['cards']:
                 return_str += unicode(card) + "\n"
             return_str += "\n"
-        return_str += "\nShortlist ({})\n".format(len(self.shortlist))
+        if self.shortlist:
+            return_str += "\nShortlist ({})\n".format(len(self.shortlist))
         for card in self.shortlist:
             return_str += unicode(card) + "\n"
         return_str = unicode(return_str)

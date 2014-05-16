@@ -44,6 +44,7 @@ def get_card_map_of_all_cards(lower=False):
     Retrieve from redis cache if possible.
     """
     cards = get_all_cards()
+    cards = update_cards(cards)
 
     cards_map = reformat_cards(cards, lower)
 
@@ -59,6 +60,35 @@ def get_card_map_of_all_cards(lower=False):
             cards_map[new_card_name] = new_card.__dict__
 
     return cards_map
+
+def update_cards(cards):
+    import changes as changes_module
+    changed_cards = []
+    print '@'*20
+    for card in cards[:]:
+        new_card = card_module.DetailedCard(card)
+        if 'celebrity' in card.name.lower():
+            print card.name.upper()
+        try:
+            changes = changes_module.changes[card.name]
+        except KeyError:
+            if 'celebrity' in card.name.lower():
+                print 'failure'
+            changed_cards.append(new_card)
+            continue
+        for change in changes:
+            if 'celebrity' in card.name.lower():
+                print change
+            attr = change[0]
+            result = change[1]
+            if 'celebrity' in card.name.lower():
+                print new_card.income
+            setattr(new_card, attr, result)
+            if 'celebrity' in card.name.lower():
+                print new_card.income
+            changed_cards.append(new_card)
+    print '@'*20
+    return changed_cards
 
 
 def clean_card_data(cards):

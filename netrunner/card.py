@@ -1,4 +1,5 @@
 import data
+import changes as changes_module
 
 class Card(object):
 
@@ -91,7 +92,7 @@ class DetailedCard(Card):
 
         elif isinstance(card, Card):
             self.card_id = card.card_id
-            self.name = unicode(card.name)
+            self.name = card.name
             self.side = card.side
             self.identity = card.identity
             self.type = card.type
@@ -129,9 +130,26 @@ class DetailedCard(Card):
         
         self.actions, self.actions_with_draw = data.get_card_actions(self)
         self.income = data.get_income(self)
+        self.net_income = data.get_net_income(self)
         self.net_cost, self.net_cost_with_draw = data.get_net_cost(self)
         self.memory_added = data.get_generated_memory(self)
         self.quantity = 1
+
+        changes = []
+        try:
+            changes = changes_module.changes[self.name]
+        except KeyError:
+            pass
+        for change in changes:
+            if 'celebrity' in self.name.lower():
+                print '*'*20
+                print self.income
+            attr = change[0]
+            result = change[1]
+            setattr(self, attr, result)
+            if 'celebrity' in self.name.lower():
+                print self.income
+                print '*'*20
 
 
 

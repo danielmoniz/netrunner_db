@@ -40,11 +40,20 @@ def read_deck():
     import data
 
     test_card = full_card_map["Blackguard"]
+    #pprint.pprint(test_card)
+
     # @TODO This causes a KeyError. Fix this!
     #test_card = full_card_map["Unregistered S&W '35"]
-    pprint.pprint(test_card)
             
     analysis_blocks = analysis.build_analysis_blocks(deck)
+
+    print ')'*20
+    for card in deck:
+        if not data.is_instant(card):
+            continue
+        if int(card.income) > 0:
+            print card, card.income, card.cost, card.net_income
+    print ')'*20
 
     return render_template(
         'read_deck.html', 
