@@ -144,7 +144,6 @@ def get_corp_analysis_ftn_blocks(cards):
                 average_actions_to_score_winning_agendas,
             ],
             'column_names': ['All'] + data.get_list_of_attr('name', data.get_cards_of_type('agenda', cards), unique=True),
-            #'column_names': get_corp_general_column_names(),
             'column_map_ftn': data.get_cards_of_name,
             'card_subset': data.get_cards_of_type('agenda', cards),
         },
@@ -156,15 +155,22 @@ def get_corp_analysis_ftn_blocks(cards):
                 total_net_income_from_instant_cards,
                 average_net_income_from_instant_cards,
                 draw_rate_of_income_cards,
+                net_income_draw_rate,
             ],
             'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(cards, instant=True), unique=True),
-            #'column_names': get_corp_general_column_names(),
             'column_map_ftn': data.get_cards_of_name,
             'card_subset': data.get_money_making_cards(cards, instant=True),
         },
 
     ]
     return analysis_ftn_blocks
+
+def net_income_draw_rate(cards, full_deck=None, **kwargs):
+    income_cards = data.get_money_making_cards(cards, instant=True)
+    total_net_income = data.sum_over_attr('net_income', income_cards)
+    total_cards = data.get_total_cards(full_deck)
+    net_income_draw_rate = float(total_net_income) / total_cards
+    return round(net_income_draw_rate, 2)
 
 def draw_rate_of_income_cards(cards, full_deck=None, **kwargs):
     num_cards = data.get_total_cards(full_deck)
@@ -253,6 +259,20 @@ def get_runner_analysis_ftn_blocks(cards):
             'column_names': get_memory_column_names(cards),
             'column_map_ftn': data.get_cards_of_name,
             'card_subset': data.get_memory_added_cards(cards),
+        },
+
+        {'title': 'Income Analysis', 
+            'analysis_ftns':
+            [
+                total,
+                total_net_income_from_instant_cards,
+                average_net_income_from_instant_cards,
+                draw_rate_of_income_cards,
+                net_income_draw_rate,
+            ],
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(cards, instant=True), unique=True),
+            'column_map_ftn': data.get_cards_of_name,
+            'card_subset': data.get_money_making_cards(cards, instant=True),
         },
 
     ]
