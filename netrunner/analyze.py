@@ -148,7 +148,7 @@ def get_corp_analysis_ftn_blocks(cards):
             'card_subset': data.get_cards_of_type('agenda', cards),
         },
 
-        {'title': 'Income Analysis', 
+        {'title': 'Income Analysis',
             'analysis_ftns':
             [
                 total,
@@ -261,7 +261,7 @@ def get_runner_analysis_ftn_blocks(cards):
             'card_subset': data.get_memory_added_cards(cards),
         },
 
-        {'title': 'Income Analysis', 
+        {'title': 'Income Analysis',
             'analysis_ftns':
             [
                 total,
