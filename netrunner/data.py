@@ -1,7 +1,8 @@
 import collections
 import re
+import math
 
-import card as card_module
+import parse
 
 def sort_by_attr(attr, cards, convert_type=None, descending=True, secondary_attr=None):
     if not convert_type:
@@ -467,7 +468,7 @@ def get_agendas_to_fastest_win(agendas, identity=None, points_to_win=7):
     if total_agendas_points < points_to_win:
         return []
     agendas = sorted(agendas, key=lambda card: float(card.actions) / float(card.agendapoints))
-    agendas_left = get_full_card_list(agendas)
+    agendas_left = parse.get_full_card_list(agendas)
     best_agendas = []
     for card in agendas_left[:]:
         if int(card.agendapoints) <= points_left:
@@ -489,27 +490,31 @@ def get_agendas_to_fastest_win(agendas, identity=None, points_to_win=7):
 def get_cards_of_set(card_set, cards):
     return get_cards_of_attr('set', card_set, cards)
 
-def get_full_card_list(cards):
-    all_cards = []
-    for card in cards:
-        for i in range(card.quantity):
-            new_card = card_module.DetailedCard(card)
-            all_cards.append(new_card)
-    return all_cards
+def get_turns_to_play(cards, identity=None, credits=5):
+    if not cards:
+        return 0
+    side = cards[0].side.lower()
+    clicks_per_turn = 3
+    if side == 'runner':
+        clicks_per_turn = 4
 
-def condense_card_list(cards):
-    """Look for duplicate cards and instead return a list with quantities attached to unique cards.
-    """
-    condensed_cards = []
-    card_count = {}
-    for card in cards:
-        try:
-            card_count[card.name] += card.quantity
-        except KeyError:
-            card_count[card.name] = card.quantity
+    actions_to_play = sum_over_attr('actions', cards, convert_type=int)
+    total_cost = sum_over_attr('cost', cards, convert_type=int)
+    money_made = sum_over_attr('income', get_money_making_cards(cards, instant=True), convert_type=int)
+    extra_credits_needed = total_cost - money_made - credits
+    actions_for_single_credits = extra_credits_needed
 
-    for name, quantity in card_count.iteritems():
-        card.quantity = quantity
-        card = filter(lambda card: card.name == name, cards)[0]
-        condensed_cards.append(card)
-    return condensed_cards
+    clicks_to_play = actions_to_play + actions_for_single_credits
+    turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
+
+    cards_to_draw = max(0, len(cards) - 5)
+    # Corps get one free draw per turn - calculate and update turns to play
+    draw_clicks = cards_to_draw
+    if side == 'corp':
+        draw_clicks = max(0, cards_to_draw - math.ceil(turns_to_play))
+
+    clicks_to_play = actions_to_play + actions_for_single_credits + draw_clicks
+    turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
+
+    return turns_to_play
+

@@ -2,6 +2,7 @@ import data
 import re
 import card as card_module
 import output
+import parse
 
 def run_analysis_ftns(analysis_ftns, cards, **kwargs):
     analyses = []
@@ -147,7 +148,7 @@ def get_corp_analysis_ftn_blocks(deck):
             'column_names': ['All'] + data.get_list_of_attr('name', data.get_cards_of_type('agenda', deck), unique=True),
             'column_map_ftn': data.get_cards_of_name,
             'card_subset': data.get_cards_of_type('agenda', deck),
-            'notes': "Cards for fastest win: " + output.print_single_line_card_list(data.condense_card_list(get_cards_for_fastest_win(deck))),
+            'notes': "Cards for fastest win: " + output.print_single_line_card_list(parse.condense_card_list(get_cards_for_fastest_win(deck))),
         },
 
         {'title': 'Income Analysis',
@@ -435,25 +436,15 @@ def average_agendas_scored_to_win(cards, identity=None, **kwargs):
     return round(num_scored_to_win, 2)
 
 def minimum_turns_to_win(cards, identity=None, **kwargs):
+    clicks_per_turn = 3
     starting_credits = 5
+
     cards_for_win = get_cards_for_fastest_win(cards, identity, kwargs['full_deck'])
     if not cards_for_win:
         return '/'
-    actions_to_play = data.sum_over_attr('actions', cards_for_win, convert_type=int)
-    total_cost = data.sum_over_attr('cost', cards_for_win, convert_type=int)
-    money_made = data.sum_over_attr('income', data.get_money_making_cards(cards_for_win, instant=True), convert_type=int)
-    extra_credits_needed = total_cost - money_made - starting_credits
-    print "total_cost:", total_cost
-    print "money_made:", money_made
-    print "extra_credits_needed:", extra_credits_needed
-    
-    clicks_per_turn = 3
-
-    actions_for_single_credits = extra_credits_needed
-
-    clicks_to_play = actions_to_play + actions_for_single_credits
-    turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
+    turns_to_play = data.get_turns_to_play(cards_for_win)
     return turns_to_play
+
 
 def get_cards_for_fastest_win(cards, identity=None, full_deck=None):
     if not identity:
@@ -476,7 +467,7 @@ def get_cards_for_fastest_win(cards, identity=None, full_deck=None):
     #turns_for_credits = max(0, total_cost - 5)
     credits_needed = max(0, total_cost - 5)
     money_makers = data.get_money_making_cards(full_deck, instant=True)
-    money_makers = data.get_full_card_list(money_makers)
+    money_makers = parse.get_full_card_list(money_makers)
     money_makers = sorted(money_makers, key=lambda card: int(card.net_cost))
     money_makers_used = []
     actions_used_for_moneymakers = 0
