@@ -150,15 +150,15 @@ def get_net_income(card):
 def get_net_cost(card):
     """Assume card has 'actions' and 'income' attributes.
     Also assume that 1 Click = 1 Credit.
+    Note: Only accounst for income if card is an instant.
     """
     if card.cost == "X":
         return ("X", "X+1")
     if card.cost == "":
         return ("", "")
-    if card.type.lower() == 'agenda':
-        net_cost = int(card.cost) - card.income
-    else:
-        net_cost = int(card.cost) + card.actions - card.income
+    net_cost = int(card.cost) + card.actions
+    if is_instant(card):
+        net_cost -= card.income
     net_cost_with_draw = net_cost + 1
     return net_cost, net_cost_with_draw
 
@@ -496,3 +496,20 @@ def get_full_card_list(cards):
             new_card = card_module.DetailedCard(card)
             all_cards.append(new_card)
     return all_cards
+
+def condense_card_list(cards):
+    """Look for duplicate cards and instead return a list with quantities attached to unique cards.
+    """
+    condensed_cards = []
+    card_count = {}
+    for card in cards:
+        try:
+            card_count[card.name] += card.quantity
+        except KeyError:
+            card_count[card.name] = card.quantity
+
+    for name, quantity in card_count.iteritems():
+        card.quantity = quantity
+        card = filter(lambda card: card.name == name, cards)[0]
+        condensed_cards.append(card)
+    return condensed_cards

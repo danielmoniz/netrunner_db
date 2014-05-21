@@ -39,8 +39,10 @@ def read_deck():
     # test
     import data
 
-    test_card = full_card_map["Blackguard"]
-    #pprint.pprint(test_card)
+    test_card = full_card_map["Hedge Fund"]
+    pprint.pprint(test_card)
+    new_card = card_module.DetailedCard(test_card)
+    print new_card, new_card.cost, new_card.net_cost
 
     # @TODO This causes a KeyError. Fix this!
     #test_card = full_card_map["Unregistered S&W '35"]

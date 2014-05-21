@@ -51,6 +51,7 @@
 	{% endfor %}
     {% endif %}
     </div>
+
     {#
     <div class="column" style="float:right;">
     {% if flaws %}
@@ -61,6 +62,7 @@
     {% endif %}
     </div>
     #}
+
     <div class="column">
 	{% for analysis_block in analysis %}
 	    <table class="analysis_block" cellpadding="3">
@@ -79,9 +81,12 @@
 		{% endfor %}
 		</tr>
 	    {% endfor %}
-	    </table><br />
+	    </table>
+	    {{ analysis_block.notes }}
+	    <br /><br />
 	{% endfor %}
     </div>
+
     <div class="column full_column">
 	<h2>Submit a deck</h2>
 	<form action="/read_deck" method="POST">

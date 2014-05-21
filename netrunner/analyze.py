@@ -1,6 +1,7 @@
 import data
 import re
 import card as card_module
+import output
 
 def run_analysis_ftns(analysis_ftns, cards, **kwargs):
     analyses = []
@@ -28,11 +29,11 @@ def run_special_analyses(cards, side, **kwargs):
     return run_analysis_ftns(analysis_ftns, cards, **kwargs)
 
 
-def get_analysis_ftn_blocks(side, cards):
+def get_analysis_ftn_blocks(side, deck):
     if side.lower() == 'corp':
-        return get_corp_analysis_ftn_blocks(cards)
+        return get_corp_analysis_ftn_blocks(deck)
     elif side.lower() == 'runner':
-        return get_runner_analysis_ftn_blocks(cards)
+        return get_runner_analysis_ftn_blocks(deck)
     else:
         raise ValueError("side variable is not 'corp' or 'runner'.")
 
@@ -84,7 +85,7 @@ def get_icebreaker_subtype_columns(cards):
         subtypes.remove('Icebreaker')
     return subtypes
 
-def get_corp_analysis_ftn_blocks(cards):
+def get_corp_analysis_ftn_blocks(deck):
     analysis_ftn_blocks = [
         {'title': 'Deck constraints', 
             'analysis_ftns':
@@ -129,9 +130,9 @@ def get_corp_analysis_ftn_blocks(cards):
                 mean_cost_to_strength_ratio_without_duplicates,
                 number_of_ice_that_ends_runs,
             ],
-            'column_names': get_ice_subtype_columns(data.get_ice(cards)),
+            'column_names': get_ice_subtype_columns(data.get_ice(deck)),
             'column_map_ftn': data.get_cards_of_subtype,
-            'card_subset': data.get_ice(cards),
+            'card_subset': data.get_ice(deck),
         },
 
         {'title': 'Agenda Analysis', 
@@ -143,9 +144,10 @@ def get_corp_analysis_ftn_blocks(cards):
                 average_agendas_scored_to_win,
                 average_actions_to_score_winning_agendas,
             ],
-            'column_names': ['All'] + data.get_list_of_attr('name', data.get_cards_of_type('agenda', cards), unique=True),
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_cards_of_type('agenda', deck), unique=True),
             'column_map_ftn': data.get_cards_of_name,
-            'card_subset': data.get_cards_of_type('agenda', cards),
+            'card_subset': data.get_cards_of_type('agenda', deck),
+            'notes': "Cards for fastest win: " + output.print_single_line_card_list(data.condense_card_list(get_cards_for_fastest_win(deck))),
         },
 
         {'title': 'Income Analysis',
@@ -157,9 +159,9 @@ def get_corp_analysis_ftn_blocks(cards):
                 draw_rate_of_income_cards,
                 net_income_draw_rate,
             ],
-            'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(cards, instant=True), unique=True),
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(deck, instant=True), unique=True),
             'column_map_ftn': data.get_cards_of_name,
-            'card_subset': data.get_money_making_cards(cards, instant=True),
+            'card_subset': data.get_money_making_cards(deck, instant=True),
         },
 
         {'title': 'Set Analysis',
@@ -172,7 +174,7 @@ def get_corp_analysis_ftn_blocks(cards):
                 operation,
                 upgrade,
             ],
-            'column_names': get_sets(cards),
+            'column_names': get_sets(deck),
             'column_map_ftn': data.get_cards_of_set,
             'transpose': True,
         },
@@ -186,7 +188,7 @@ def get_sets(cards):
     return list(sets)
 
 
-def get_runner_analysis_ftn_blocks(cards):
+def get_runner_analysis_ftn_blocks(deck):
     analysis_ftn_blocks = [
         {'title': 'Deck constraints', 
             'analysis_ftns':
@@ -227,9 +229,9 @@ def get_runner_analysis_ftn_blocks(cards):
                 mean_cost_to_strength_ratio,
                 mean_cost_to_strength_ratio_without_duplicates,
             ],
-            'column_names': get_icebreaker_subtype_columns(data.get_icebreakers(cards)),
+            'column_names': get_icebreaker_subtype_columns(data.get_icebreakers(deck)),
             'column_map_ftn': data.get_cards_of_subtype,
-            'card_subset': data.get_icebreakers(cards),
+            'card_subset': data.get_icebreakers(deck),
         },
 
         {'title': 'Program Analysis (general)', 
@@ -241,7 +243,7 @@ def get_runner_analysis_ftn_blocks(cards):
             ],
             'column_names': ['All', 'Icebreaker',],
             'column_map_ftn': data.get_cards_of_subtype,
-            'card_subset': data.get_cards_of_type("program", cards),
+            'card_subset': data.get_cards_of_type("program", deck),
         },
 
         {'title': "Memory Analysis", 
@@ -251,9 +253,9 @@ def get_runner_analysis_ftn_blocks(cards):
                 total,
                 deck_memory,
             ],
-            'column_names': get_memory_column_names(cards),
+            'column_names': get_memory_column_names(deck),
             'column_map_ftn': data.get_cards_of_name,
-            'card_subset': data.get_memory_added_cards(cards),
+            'card_subset': data.get_memory_added_cards(deck),
         },
 
         {'title': 'Income Analysis',
@@ -265,9 +267,9 @@ def get_runner_analysis_ftn_blocks(cards):
                 draw_rate_of_income_cards,
                 net_income_draw_rate,
             ],
-            'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(cards, instant=True), unique=True),
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(deck, instant=True), unique=True),
             'column_map_ftn': data.get_cards_of_name,
-            'card_subset': data.get_money_making_cards(cards, instant=True),
+            'card_subset': data.get_money_making_cards(deck, instant=True),
         },
 
         {'title': 'Set Analysis',
@@ -280,7 +282,7 @@ def get_runner_analysis_ftn_blocks(cards):
                 hardware,
                 resource,
             ],
-            'column_names': get_sets(cards),
+            'column_names': get_sets(deck),
             'column_map_ftn': data.get_cards_of_set,
             'transpose': True,
         },
@@ -433,13 +435,38 @@ def average_agendas_scored_to_win(cards, identity=None, **kwargs):
     return round(num_scored_to_win, 2)
 
 def minimum_turns_to_win(cards, identity=None, **kwargs):
+    starting_credits = 5
+    cards_for_win = get_cards_for_fastest_win(cards, identity, kwargs['full_deck'])
+    if not cards_for_win:
+        return '/'
+    actions_to_play = data.sum_over_attr('actions', cards_for_win, convert_type=int)
+    total_cost = data.sum_over_attr('cost', cards_for_win, convert_type=int)
+    money_made = data.sum_over_attr('income', data.get_money_making_cards(cards_for_win, instant=True), convert_type=int)
+    extra_credits_needed = total_cost - money_made - starting_credits
+    print "total_cost:", total_cost
+    print "money_made:", money_made
+    print "extra_credits_needed:", extra_credits_needed
+    
+    clicks_per_turn = 3
+
+    actions_for_single_credits = extra_credits_needed
+
+    clicks_to_play = actions_to_play + actions_for_single_credits
+    turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
+    return turns_to_play
+
+def get_cards_for_fastest_win(cards, identity=None, full_deck=None):
+    if not identity:
+        identity = cards.identity
+    if not full_deck:
+        full_deck = cards
     points_to_win = 7
     if identity.name == "Harmony Medtech: Biomedical Pioneer":
         points_to_win = 6
     agendas = data.get_cards_of_type('agenda', cards)
     agendas = data.get_agendas_to_fastest_win(agendas, identity, points_to_win)
     if not agendas:
-        return '/'
+        return False
     actions_to_play = data.sum_over_attr("actions", agendas, convert_type=int)
 
     total_cost = data.sum_over_attr('cost', agendas, convert_type=int)
@@ -448,7 +475,7 @@ def minimum_turns_to_win(cards, identity=None, **kwargs):
     # for now, assume player must use actions to take credits
     #turns_for_credits = max(0, total_cost - 5)
     credits_needed = max(0, total_cost - 5)
-    money_makers = data.get_money_making_cards(kwargs['full_deck'], instant=True)
+    money_makers = data.get_money_making_cards(full_deck, instant=True)
     money_makers = data.get_full_card_list(money_makers)
     money_makers = sorted(money_makers, key=lambda card: int(card.net_cost))
     money_makers_used = []
@@ -460,11 +487,8 @@ def minimum_turns_to_win(cards, identity=None, **kwargs):
         credits_needed -= card.net_income
         actions_used_for_moneymakers += card.actions
 
-    actions_for_credits = max(0, credits_needed) + actions_used_for_moneymakers
+    return agendas + money_makers_used
 
-    clicks_to_play = actions_to_play + actions_for_credits
-    turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
-    return turns_to_play
 
 def average_actions_to_score_winning_agendas(cards, identity=None, **kwargs):
     points_to_win = 7
