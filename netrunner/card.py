@@ -141,15 +141,9 @@ class DetailedCard(Card):
         except KeyError:
             pass
         for change in changes:
-            if 'celebrity' in self.name.lower():
-                print '*'*20
-                print self.income
             attr = change[0]
             result = change[1]
             setattr(self, attr, result)
-            if 'celebrity' in self.name.lower():
-                print self.income
-                print '*'*20
 
 
 

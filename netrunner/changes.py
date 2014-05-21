@@ -11,4 +11,8 @@ changes = {
         ("income", 10),
         ("net_income", 7),
     ],
+    "Account Siphon": [
+        ("income", 10),
+        ("net_income", 10),
+    ],
 }

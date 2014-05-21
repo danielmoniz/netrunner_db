@@ -155,7 +155,10 @@ def get_net_cost(card):
         return ("X", "X+1")
     if card.cost == "":
         return ("", "")
-    net_cost = int(card.cost) + card.actions - card.income
+    if card.type.lower() == 'agenda':
+        net_cost = int(card.cost) - card.income
+    else:
+        net_cost = int(card.cost) + card.actions - card.income
     net_cost_with_draw = net_cost + 1
     return net_cost, net_cost_with_draw
 
@@ -463,14 +466,10 @@ def get_agendas_to_fastest_win(agendas, identity=None, points_to_win=7):
     total_agendas_points = sum_over_attr('agendapoints', agendas, convert_type=int)
     if total_agendas_points < points_to_win:
         return []
-    agendas = sorted(agendas, key=lambda card: float(card.net_cost) / float(card.agendapoints))
-    agendas_left = []
-    for card in agendas:
-        for i in range(card.quantity):
-            new_card = card_module.DetailedCard(card)
-            agendas_left.append(new_card)
+    agendas = sorted(agendas, key=lambda card: float(card.actions) / float(card.agendapoints))
+    agendas_left = get_full_card_list(agendas)
     best_agendas = []
-    for card in agendas_left:
+    for card in agendas_left[:]:
         if int(card.agendapoints) <= points_left:
             best_agendas.append(card)
             points_left -= int(card.agendapoints)
@@ -487,3 +486,13 @@ def get_agendas_to_fastest_win(agendas, identity=None, points_to_win=7):
     """
     return best_agendas
 
+def get_cards_of_set(card_set, cards):
+    return get_cards_of_attr('set', card_set, cards)
+
+def get_full_card_list(cards):
+    all_cards = []
+    for card in cards:
+        for i in range(card.quantity):
+            new_card = card_module.DetailedCard(card)
+            all_cards.append(new_card)
+    return all_cards

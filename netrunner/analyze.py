@@ -162,34 +162,29 @@ def get_corp_analysis_ftn_blocks(cards):
             'card_subset': data.get_money_making_cards(cards, instant=True),
         },
 
+        {'title': 'Set Analysis',
+            'analysis_ftns':
+            [
+                total,
+                agenda,
+                ice,
+                asset,
+                operation,
+                upgrade,
+            ],
+            'column_names': get_sets(cards),
+            'column_map_ftn': data.get_cards_of_set,
+            'transpose': True,
+        },
+
     ]
     return analysis_ftn_blocks
 
-def net_income_draw_rate(cards, full_deck=None, **kwargs):
-    income_cards = data.get_money_making_cards(cards, instant=True)
-    total_net_income = data.sum_over_attr('net_income', income_cards)
-    total_cards = data.get_total_cards(full_deck)
-    net_income_draw_rate = float(total_net_income) / total_cards
-    return round(net_income_draw_rate, 2)
+def get_sets(cards):
+    sets = set(data.get_list_of_attr('set', cards, unique=True))
+    sets.update(["Core"])
+    return list(sets)
 
-def draw_rate_of_income_cards(cards, full_deck=None, **kwargs):
-    num_cards = data.get_total_cards(full_deck)
-    income_cards = data.get_money_making_cards(cards)
-    num_income_cards = data.get_total_cards(income_cards)
-    ratio = num_income_cards / float(num_cards)
-    return get_percent_from_decimal(ratio)
-
-
-def average_net_income_from_instant_cards(cards, **kwargs):
-    cards = data.get_money_making_cards(cards)
-    total_income = data.get_net_income_from_cards(cards, instant=True)
-    num_income_cards = data.get_total_cards(cards)
-    return round(float(total_income) / num_income_cards, 2)
-
-def total_net_income_from_instant_cards(cards, **kwargs):
-    cards = data.get_money_making_cards(cards)
-    total_income = data.get_net_income_from_cards(cards, instant=True)
-    return total_income
 
 def get_runner_analysis_ftn_blocks(cards):
     analysis_ftn_blocks = [
@@ -273,6 +268,21 @@ def get_runner_analysis_ftn_blocks(cards):
             'column_names': ['All'] + data.get_list_of_attr('name', data.get_money_making_cards(cards, instant=True), unique=True),
             'column_map_ftn': data.get_cards_of_name,
             'card_subset': data.get_money_making_cards(cards, instant=True),
+        },
+
+        {'title': 'Set Analysis',
+            'analysis_ftns':
+            [
+                total,
+                event,
+                icebreaker,
+                program,
+                hardware,
+                resource,
+            ],
+            'column_names': get_sets(cards),
+            'column_map_ftn': data.get_cards_of_set,
+            'transpose': True,
         },
 
     ]
@@ -430,28 +440,41 @@ def minimum_turns_to_win(cards, identity=None, **kwargs):
     agendas = data.get_agendas_to_fastest_win(agendas, identity, points_to_win)
     if not agendas:
         return '/'
-    turns_to_play = data.sum_over_attr("actions", agendas, convert_type=int)
+    actions_to_play = data.sum_over_attr("actions", agendas, convert_type=int)
 
     total_cost = data.sum_over_attr('cost', agendas, convert_type=int)
     start_credits = 5
     clicks_per_turn = 3
     # for now, assume player must use actions to take credits
-    turns_for_credits = max(0, total_cost - 5)
-    print '^'*20
-    for card in agendas:
-        print card.name, card.cost, card.agendapoints
-    print '^'*20
+    #turns_for_credits = max(0, total_cost - 5)
+    credits_needed = max(0, total_cost - 5)
+    money_makers = data.get_money_making_cards(kwargs['full_deck'], instant=True)
+    money_makers = data.get_full_card_list(money_makers)
+    money_makers = sorted(money_makers, key=lambda card: int(card.net_cost))
+    money_makers_used = []
+    actions_used_for_moneymakers = 0
+    for card in money_makers:
+        if credits_needed < card.actions:
+            break
+        money_makers_used.append(card)
+        credits_needed -= card.net_income
+        actions_used_for_moneymakers += card.actions
 
-    clicks_to_play = turns_to_play + turns_for_credits
+    actions_for_credits = max(0, credits_needed) + actions_used_for_moneymakers
+
+    clicks_to_play = actions_to_play + actions_for_credits
     turns_to_play = round(float(clicks_to_play) / clicks_per_turn, 2)
     return turns_to_play
-    #return turns_to_play, turns_for_credits
 
 def average_actions_to_score_winning_agendas(cards, identity=None, **kwargs):
     points_to_win = 7
     if identity.name == "Harmony Medtech: Biomedical Pioneer":
         points_to_win = 6
     agendas = data.get_cards_of_type('agenda', cards)
+    print '^'*20
+    for card in agendas:
+        print card.name, card.actions, card.agendapoints
+    print '^'*20
     num_agendas = data.get_total_cards(agendas)
     total_actions = data.sum_over_attr('actions', agendas, convert_type=int)
     total_points = data.sum_over_attr('agendapoints', agendas, convert_type=int)
@@ -461,6 +484,69 @@ def average_actions_to_score_winning_agendas(cards, identity=None, **kwargs):
     if average_actions_to_score == int(average_actions_to_score):
         return int(average_actions_to_score)
     return average_actions_to_score
+
+def net_income_draw_rate(cards, full_deck=None, **kwargs):
+    income_cards = data.get_money_making_cards(cards, instant=True)
+    total_net_income = data.sum_over_attr('net_income', income_cards)
+    total_cards = data.get_total_cards(full_deck)
+    net_income_draw_rate = float(total_net_income) / total_cards
+    return round(net_income_draw_rate, 2)
+
+def draw_rate_of_income_cards(cards, full_deck=None, **kwargs):
+    num_cards = data.get_total_cards(full_deck)
+    income_cards = data.get_money_making_cards(cards)
+    num_income_cards = data.get_total_cards(income_cards)
+    ratio = num_income_cards / float(num_cards)
+    return get_percent_from_decimal(ratio)
+
+
+def average_net_income_from_instant_cards(cards, **kwargs):
+    cards = data.get_money_making_cards(cards)
+    total_income = data.get_net_income_from_cards(cards, instant=True)
+    num_income_cards = data.get_total_cards(cards)
+    return round(float(total_income) / num_income_cards, 2)
+
+def total_net_income_from_instant_cards(cards, **kwargs):
+    cards = data.get_money_making_cards(cards)
+    total_income = data.get_net_income_from_cards(cards, instant=True)
+    return total_income
+
+
+# Specific category getters (to use functions as columns)
+# ---- Corp category getters
+
+def agenda(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('agenda', cards))
+
+def ice(cards, **kwargs):
+    return data.get_total_cards(data.get_ice(cards))
+
+def asset(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('asset', cards))
+
+def operation(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('operation', cards))
+
+def upgrade(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('upgrade', cards))
+
+# ---- Runner category getters
+
+def event(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('event', cards))
+
+def icebreaker(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_subtype('icebreaker', cards))
+
+def program(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('program', cards))
+
+def hardware(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('hardware', cards))
+
+def resource(cards, **kwargs):
+    return data.get_total_cards(data.get_cards_of_type('resource', cards))
+
 
 # ---------
 
