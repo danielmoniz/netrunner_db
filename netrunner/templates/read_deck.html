@@ -8,6 +8,7 @@
 	    .table_left_header { width:150px; }
 	    .table_top_header td { min-width:65px; max-width:100px; }
 	    .table_title { font-size:32; }
+	    .human_text { max-width: 70ex; }
 	</style>
     </head>
     <div class="main">
@@ -65,6 +66,7 @@
 
     <div class="column">
 	{% for analysis_block in analysis %}
+	    <div>
 	    <table class="analysis_block" cellpadding="3">
 	    <caption class="table_title">{{ analysis_block.title }}</caption>
 	    {% for row in analysis_block.table %}
@@ -82,7 +84,10 @@
 		</tr>
 	    {% endfor %}
 	    </table>
-	    {{ analysis_block.notes }}
+	    <div class="human_text">
+		{{ analysis_block.notes }}
+	    </div>
+	    </div>
 	    <br /><br />
 	{% endfor %}
     </div>
@@ -94,6 +99,12 @@
 	    <br />
 	    <input type='submit' />
 	</form>
+    </div>
+    <div id="extra" class="full_column">
+	{% for item in extra %}
+	    {{ item|safe }}
+	    <br />
+	{% endfor %}
     </div>
     </div>
 

@@ -76,7 +76,7 @@ class Deck(object):
         if self.shortlist:
             return_str += "\nShortlist ({})\n".format(len(self.shortlist))
         for card in self.shortlist:
-            return_str += unicode(card) + "\n"
+            return_str += card.name + "\n"
         return_str = unicode(return_str)
         print return_str
         return return_str

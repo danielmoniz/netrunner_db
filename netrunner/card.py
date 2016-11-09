@@ -135,6 +135,8 @@ class DetailedCard(Card):
         self.memory_added = data.get_generated_memory(self)
         self.quantity = 1
 
+        self.bad_publicity = data.get_bad_publicity(self)
+
         changes = []
         try:
             changes = changes_module.changes[self.name]

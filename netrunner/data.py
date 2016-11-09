@@ -140,8 +140,7 @@ def get_income(card):
     return 0
 
 def get_net_income(card):
-    income = get_income(card)
-    cost = card.cost
+    income = int(card.income)
     try:
         income -= int(card.cost)
     except ValueError:
@@ -170,7 +169,7 @@ def get_cards_of_name(name, cards):
     
 
 def get_generated_memory(card):
-    match = re.search('\+(\d) \[Memory Unit', card.text)
+    match = re.search('\+(?: )?(\d) \[Memory Unit', card.text)
     if match:
         memory_added = match.groups()[0]
         return int(memory_added)
@@ -180,10 +179,16 @@ def get_generated_memory_from_deck(cards):
     total = 4
     consoles = get_cards_of_subtype("console", cards)
     weakest_consoles = sort_by_attr("memory_added", consoles)[1:]
+    used_console = False
     for card in cards:
         if card in weakest_consoles:
             continue
-        total += int(card.memory_added)
+        if card in consoles and not used_console:
+            total += int(card.memory_added)
+            used_console = True
+            continue
+        total += int(card.memory_added) * int(card.quantity)
+
     return total
 
 def get_memory_added_cards(cards):
@@ -518,3 +523,30 @@ def get_turns_to_play(cards, identity=None, credits=5):
 
     return turns_to_play
 
+def get_bad_publicity(card):
+    """
+    Bad publicity can actually be fairly complex. This function attempts 
+    to determine it, but will likely fail in many cases. Please report any 
+    strangeness.
+    """
+    bad_publicity = 0
+    sentences = get_sentences_from_text(card.text)
+    for sentence in sentences:
+        match = re.search('[Tt]ake(?: up to)? ((\d)+) bad publicity', sentence)
+        if match:
+            bad_publicity += int(match.groups()[0])
+        match = re.search('[Ss]tart the game .* ((\d)+) bad publicity', sentence)
+        if match:
+            bad_publicity += int(match.groups()[0])
+        match = re.search('[Rr]emove(?: up to)? ((\d)+) bad publicity', sentence)
+        if match:
+            print match.groups()
+            bad_publicity -= int(match.groups()[0])
+    return bad_publicity
+
+def get_bad_publicity_cards(cards):
+    bad_publicity_cards = []
+    for card in cards:
+        if card.bad_publicity != 0:
+            bad_publicity_cards.append(card)
+    return bad_publicity_cards

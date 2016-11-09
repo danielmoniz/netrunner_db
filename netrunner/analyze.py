@@ -74,6 +74,10 @@ def get_mandatory_icebreaker_column_names():
         'AI',
     ]
 
+def get_sets(cards):
+    sets = set(data.get_list_of_attr('set', cards, unique=True))
+    sets.update(["Core"])
+    return list(sets)
 
 def get_ice_subtype_columns(cards):
     mandatory_subtypes = get_mandatory_ice_column_names()
@@ -91,7 +95,7 @@ def get_corp_analysis_ftn_blocks(deck):
         {'title': 'Deck constraints', 
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_out_of_faction_influence,
                 agenda_points,
             ],
@@ -102,7 +106,7 @@ def get_corp_analysis_ftn_blocks(deck):
         {'title': 'General Analysis', 
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_as_ratio,
                 total_cost,
                 total_cost_without_duplicates,
@@ -121,7 +125,7 @@ def get_corp_analysis_ftn_blocks(deck):
         {'title': 'Ice Analysis (general)', 
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_cost,
                 total_cost_without_duplicates,
                 mean_strength,
@@ -139,7 +143,7 @@ def get_corp_analysis_ftn_blocks(deck):
         {'title': 'Agenda Analysis', 
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 agenda_points,
                 minimum_turns_to_win,
                 average_agendas_scored_to_win,
@@ -154,7 +158,7 @@ def get_corp_analysis_ftn_blocks(deck):
         {'title': 'Income Analysis',
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_net_income_from_instant_cards,
                 average_net_income_from_instant_cards,
                 draw_rate_of_income_cards,
@@ -168,7 +172,7 @@ def get_corp_analysis_ftn_blocks(deck):
         {'title': 'Set Analysis',
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 agenda,
                 ice,
                 asset,
@@ -180,21 +184,27 @@ def get_corp_analysis_ftn_blocks(deck):
             'transpose': True,
         },
 
+        {'title': 'Bad Publicity Analysis',
+            'analysis_ftns':
+            [
+                total_cards,
+                bad_publicity,
+            ],
+            'column_names': ['All'] + data.get_list_of_attr('name', data.get_bad_publicity_cards(deck), unique=True),
+            'column_map_ftn': data.get_cards_of_name,
+            'card_subset': data.get_bad_publicity_cards(deck),
+            'notes': data.get_bad_publicity.__doc__
+        },
+
     ]
     return analysis_ftn_blocks
-
-def get_sets(cards):
-    sets = set(data.get_list_of_attr('set', cards, unique=True))
-    sets.update(["Core"])
-    return list(sets)
-
 
 def get_runner_analysis_ftn_blocks(deck):
     analysis_ftn_blocks = [
         {'title': 'Deck constraints', 
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_out_of_faction_influence,
                 turns_to_play,
             ],
@@ -222,7 +232,7 @@ def get_runner_analysis_ftn_blocks(deck):
         {'title': 'Icebreaker Analysis (general)', 
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_cost,
                 total_cost_without_duplicates,
                 mean_strength,
@@ -251,7 +261,7 @@ def get_runner_analysis_ftn_blocks(deck):
             'analysis_ftns':
             [
                 total_generated_memory,
-                total,
+                total_cards,
                 deck_memory,
             ],
             'column_names': get_memory_column_names(deck),
@@ -262,7 +272,7 @@ def get_runner_analysis_ftn_blocks(deck):
         {'title': 'Income Analysis',
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 total_net_income_from_instant_cards,
                 average_net_income_from_instant_cards,
                 draw_rate_of_income_cards,
@@ -276,7 +286,7 @@ def get_runner_analysis_ftn_blocks(deck):
         {'title': 'Set Analysis',
             'analysis_ftns':
             [
-                total,
+                total_cards,
                 event,
                 icebreaker,
                 program,
@@ -332,7 +342,7 @@ def total_memory_units_without_duplicates(cards, **kwargs):
     return total
 
 
-def total(cards, **kwargs):
+def total_cards(cards, **kwargs):
     return data.get_total_cards(cards)
 
 def total_as_ratio(cards, **kwargs):
@@ -347,6 +357,12 @@ def get_percent_from_decimal(number):
 
 def total_cost(cards, **kwargs):
     total_cost = data.sum_over_attr("cost", cards, convert_type=int)
+    return total_cost
+
+def total_cost_of_deck(cards, full_deck=None, **kwargs):
+    if not full_deck:
+        return False
+    total_cost = data.sum_over_attr("cost", full_deck, convert_type=int)
     return total_cost
 
 def mean_cost(cards, **kwargs):
@@ -498,7 +514,7 @@ def average_actions_to_score_winning_agendas(cards, identity=None, **kwargs):
     average_actions_to_score = float(total_actions) * ratio
     if average_actions_to_score == int(average_actions_to_score):
         return int(average_actions_to_score)
-    return average_actions_to_score
+    return round(average_actions_to_score, 2)
 
 def net_income_draw_rate(cards, full_deck=None, **kwargs):
     income_cards = data.get_money_making_cards(cards, instant=True)
@@ -526,6 +542,11 @@ def total_net_income_from_instant_cards(cards, **kwargs):
     total_income = data.get_net_income_from_cards(cards, instant=True)
     return total_income
 
+def bad_publicity(cards, **kwargs):
+    total = 0
+    for card in cards:
+        total += card.bad_publicity * int(card.quantity)
+    return total
 
 # Specific category getters (to use functions as columns)
 # ---- Corp category getters

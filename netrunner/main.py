@@ -39,7 +39,7 @@ def read_deck():
     # test
     import data
 
-    test_card = full_card_map["Hedge Fund"]
+    test_card = full_card_map["Q-Coherence Chip"]
     pprint.pprint(test_card)
     new_card = card_module.DetailedCard(test_card)
     print new_card, new_card.cost, new_card.net_cost
@@ -57,6 +57,26 @@ def read_deck():
             print card, card.income, card.cost, card.net_income
     print ')'*20
 
+    cards = data.get_memory_added_cards(all_cards)
+    for card in cards:
+        print card
+    print '&'*20
+
+    cards = data.get_cards_of_attr("bad_publicity", 0, all_cards, convert_type=int, compare=lambda x,y: x != y)
+    for card in cards:
+        print card.name, card.bad_publicity
+    print '#'*20
+
+    cards = data.advanced_deck_search(all_cards, exact_text=["bad publicity"])
+    extra = []
+    for card in cards:
+        item = ""
+        item += card.name + " " + unicode(card.bad_publicity) + "<br />"
+        item += card.type + "<br />"
+        item += card.text + "<br />"
+        extra.append(item)
+    print '#'*20
+
     return render_template(
         'read_deck.html', 
         deck=deck,
@@ -67,6 +87,7 @@ def read_deck():
         cat_cards=deck.cat_cards, 
         flaws=flaws,
         analysis=analysis_blocks,
+        extra=extra,
     )
 
 

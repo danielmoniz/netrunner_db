@@ -15,4 +15,7 @@ changes = {
         ("income", 10),
         ("net_income", 10),
     ],
+    "Hostile Takeover": [
+        ("income", 7),
+    ],
 }
